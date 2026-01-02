@@ -123,6 +123,19 @@ convert_loop:
     dex         ; Move to the next digit
     bpl convert_loop
 
+    ; Check for leading zeros
+    ldx #$00
+remove_leading_zeros:
+    lda DECIMAL_BUFFER, x
+    cmp #$30  ; Compare with PETSCII '0'
+    bne done_leading_zeros
+    lda #$20
+    sta DECIMAL_BUFFER, x
+    inx
+    cpx #4
+    bne remove_leading_zeros
+done_leading_zeros:
+
     ; Print the resulting string
     ldx #<DECIMAL_BUFFER
     ldy #>DECIMAL_BUFFER
