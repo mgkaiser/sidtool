@@ -82,11 +82,14 @@ clear_buffer:
     lda TMP1 + 1
     sta TMP2 + 1
 
+    ; Store the divisor (10) in TMP3
+    lda #$0A          ; Divisor = 10
+    sta TMP3
+
     ; Convert to decimal digits (PETSCII)
     ldx #4  ; Start at the least significant digit (buffer index 4)
 convert_loop:
-    ; Divide TMP2:TMP2 + 1 by 10
-    ldy #$0A  ; Divisor = 10
+    ; Divide TMP2:TMP2 + 1 by TMP3 (10)
     jsr divide_16bit_by_8bit
 
     ; Store the remainder (digit) as PETSCII in the buffer
