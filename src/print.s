@@ -18,6 +18,10 @@
 ;   ldx <column>
 ;   ldy <row>
 ;   jsr gotoxy
+; Result:
+;   The cursor is moved to the specified position.
+; Destroyed:
+;   None
 .proc gotoxy : near
     clc
     jmp $fff0  ; C64 KERNAL SETCURSOR routine    
@@ -28,6 +32,10 @@
 ;   ldx <low byte of address>
 ;   ldy <high byte of address>
 ;   jsr print
+; Result:
+;   The string is printed to the screen.
+; Destroyed:
+;   PTR1, A, Y
 .proc print: near
     stx PTR1
     sty PTR1+1
@@ -48,6 +56,11 @@ done_printing:
 ;   ldx <low byte of address>
 ;   ldy <high byte of address>
 ;   jsr convert_16bitptr_to_decimal
+; Result:
+;   DECIMAL_BUFFER contains the resulting null-terminated PETSCII string
+;   The string is also printed to the screen.
+; Destroyed:
+;   PTR1, TMP1, TMP1 + 1, TMP2, TMP2 + 1, TMP3, TMP3 + 1, A, X, Y
 .proc convert_16bitptr_to_decimal : near
     stx PTR1
     sty PTR1 + 1
@@ -65,6 +78,11 @@ done_printing:
 ; usage:
 ;   TMP1:TMP1 + 1 = 16-bit number to convert
 ;   jsr convert_16bit_to_decimal
+; Result:
+;   DECIMAL_BUFFER contains the resulting null-terminated PETSCII string
+;   The string is also printed to the screen.
+; Destroyed:
+;   TMP2, TMP2 + 1, TMP3, TMP3 + 1, A, X, Y   
 .proc convert_16bit_to_decimal : near
     
     ; Zero out the buffer for the decimal string
@@ -89,11 +107,15 @@ clear_buffer:
     ; Convert to decimal digits (PETSCII)
     ldx #4  ; Start at the least significant digit (buffer index 4)
 convert_loop:
-    ; Divide TMP2:TMP2 + 1 by TMP3 (10)
+    ; Divide TMP2:TMP2 + 1 by TMP3 (10) to get the next digit.  Preserve X    
+    txa
+    pha
     jsr divide_16bit_by_8bit
+    pla
+    tax 
 
-    ; Store the remainder (digit) as PETSCII in the buffer
-    lda REMAINDER
+    ; Store the remainder (returned in A) as PETSCII in the buffer    
+    lda TMP3 + 1
     clc
     adc #$30  ; Convert to PETSCII ('0'-'9')
     sta DECIMAL_BUFFER, x

@@ -64,7 +64,7 @@
 
     ; Initialize voice structure to zero
     ldy #$00
-    lda #123
+    lda #$00
     init_voice_loop:
         sta (PTR1), y           
         iny
