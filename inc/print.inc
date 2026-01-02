@@ -5,6 +5,11 @@
     .import convert_16bitptr_to_decimal: near
 .endif
 
+.macro getkey
+:   jsr KERNAL_GETIN         ; C64 KERNAL GETIN routine
+    beq :-
+.endmacro
+
 .macro printat col_pos, row_pos, str_addr
     ldx row_pos
     ldy col_pos

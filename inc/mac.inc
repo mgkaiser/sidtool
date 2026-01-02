@@ -9,7 +9,8 @@ CURX = $d3
 CURY = $d6  
 
 ; Constant for KERNAL API
-KERNAL_CHROUT = $FFD2
+KERNAL_CHROUT   = $FFD2
+KERNAL_GETIN    = $FFE4
 
 ; Constants for VIC-II registers
 VIC_BASE         = $d000
@@ -63,6 +64,8 @@ SID_REG_ENV3             = SID1_BASE + $1b
 
 ; PETSCII Control Codes
 PETSCII_CLR_SCREEN = $93
+PETSCII_REVERSE_ON = $12
+PETSCII_REVERSE_OFF= $92
 
 ; PETSCII Control Codes for Colors
 PETSCII_COL_BLACK       = $90

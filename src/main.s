@@ -31,6 +31,12 @@
     ; Clear the screen
     scnclr
 
+    ; Init col and row
+    lda #$00
+    sta column
+    lda #$01
+    sta row
+
     ; Initialize SID voice structures
     jsr init_voices
 
@@ -45,6 +51,9 @@ main_loop:
     ; Update the SID with the data
 
     ; Check keys and act upon them
+    getkey
+    cmp #'Q'
+    beq exit_program
 
     ; Loop if they didn't quit
     jmp main_loop
@@ -142,18 +151,24 @@ exit_program:
     ; Display data for voice 1
     ldx #<voice1
     ldy #>voice1
+    lda #$00
+    sta TMP4
     lda #7                      ; Print voice 1 in column 7
     jsr display_data_one_voice
 
     ; Display data voice 2
     ldx #<voice2
     ldy #>voice2
+    lda #$01
+    sta TMP4
     lda #13                     ; Print voice 2 in column 13
     jsr display_data_one_voice
 
     ; Display data voice 3    
     ldx #<voice3
     ldy #>voice3
+    lda #$02
+    sta TMP4
     lda #19                     ; Print voice 3 in column 19    
     jsr display_data_one_voice
 
@@ -170,7 +185,7 @@ exit_program:
 ; Results:
 ;   Data displayed on screen
 ; Destroys:
-;   PTR2, PTR2+1, TMP2, TMP2+1, TMP3, TMP3+1, TMP4, A, X, Y
+;   PTR2, PTR2+1, TMP2, TMP2+1, TMP3, TMP3+1, TMP4, TMP4+1, A, X, Y
 .proc display_data_one_voice : near
 
     ; Store the pointer to the voice structure in PTR1
@@ -178,16 +193,29 @@ exit_program:
     sty PTR2+1  
 
     ; Store Column position in TMP1
-    sta TMP4    
+    sta TMP4 + 1   
 
     ; Prints data on rows 1 - 7
-    print_decimal_at_16 TMP4, #1, PTR2, sid_voice::freq
-    print_decimal_at_16 TMP4, #2, PTR2, sid_voice::pulse_width
-    print_decimal_at_8 TMP4, #3, PTR2, sid_voice::ctrl
-    print_decimal_at_8 TMP4, #4, PTR2, sid_voice::attack
-    print_decimal_at_8 TMP4, #5, PTR2, sid_voice::decay
-    print_decimal_at_8 TMP4, #6, PTR2, sid_voice::sustain
-    print_decimal_at_8 TMP4, #7, PTR2, sid_voice::release
+    do_reverse TMP4, #1
+    print_decimal_at_16 TMP4 + 1, #1, PTR2, sid_voice::freq
+    
+    do_reverse TMP4, #2
+    print_decimal_at_16 TMP4 + 1, #2, PTR2, sid_voice::pulse_width
+    
+    do_reverse TMP4, #3
+    print_decimal_at_8 TMP4 + 1, #3, PTR2, sid_voice::ctrl
+    
+    do_reverse TMP4, #4
+    print_decimal_at_8 TMP4 + 1, #4, PTR2, sid_voice::attack
+    
+    do_reverse TMP4, #5
+    print_decimal_at_8 TMP4 + 1, #5, PTR2, sid_voice::decay
+    
+    do_reverse TMP4, #6
+    print_decimal_at_8 TMP4 + 1, #6, PTR2, sid_voice::sustain
+
+    do_reverse TMP4, #7
+    print_decimal_at_8 TMP4 + 1, #7, PTR2, sid_voice::release
     
     rts
 .endproc
@@ -205,5 +233,8 @@ str_sus:   .asciiz "SUS : "
 voice1: .res .sizeof(sid_voice) ; Reserve space for first SID voice structure
 voice2: .res .sizeof(sid_voice) ; Reserve space for second SID voice structure
 voice3: .res .sizeof(sid_voice) ; Reserve space for third SID voice structure
+
+column:     .res 1
+row:        .res 1
 
 .endscope

@@ -18,3 +18,18 @@
     sustain     .byte    
     release     .byte       
 .endstruct  
+
+.macro do_reverse cur_col, cur_row
+    lda column
+    cmp cur_col
+    bne :+
+    lda row
+    cmp cur_row
+    bne :+
+    lda #PETSCII_REVERSE_ON
+    jsr KERNAL_CHROUT
+    jmp :++
+:   lda #PETSCII_REVERSE_OFF
+    jsr KERNAL_CHROUT
+:
+.endmacro
