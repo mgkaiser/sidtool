@@ -1,0 +1,11 @@
+MEMORY {                
+    LOADADDR:       start = $07ff,      size = $0002, fill = yes, fillval = $00;  
+    STARTUP:        start = $0801,      size = $000f, fill = yes, fillval = $00;
+    MAIN:           start = $0810,      size = $8EF0;        
+}
+
+SEGMENTS {                    
+    LOADADDR:       load = LOADADDR,        type = ro;
+    STARTUP:        load = STARTUP,         type = ro;
+    MAIN:           load = MAIN,            type = ro;     
+}
