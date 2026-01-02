@@ -239,7 +239,7 @@ loop:
     ; Did we go below 0?
     cmp #$ff
     bne :+
-        lda #$00
+        lda #$02
         sta column    
 
 :   rts
