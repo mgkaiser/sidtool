@@ -72,6 +72,7 @@ main_loop:
     gosub_if_char 'T', triangle_toggle
     gosub_if_char 'Y', sync_toggle
     gosub_if_char 'R', ringmod_toggle
+    gosub_if_char '?', display_help
     goto_if_char 'Q', exit_program    
 
     ; Loop if they didn't quit
@@ -827,6 +828,12 @@ loop:
     printat #0, #6, str_sus
     printat #0, #7, str_rel
 
+    printat #0, #9,  str_filter_cutoff
+    printat #0, #10, str_filter_res
+    printat #0, #11, str_filter_mode
+    printat #0, #12, str_filter_flag
+    printat #0, #13, str_volume    
+
     rts
 .endproc
 
@@ -965,21 +972,48 @@ loop:
     rts
 .endproc
 
+.proc display_help : near
+    ; Clear the screen
+    scnclr
+
+    ;printat #5, #5, str_help_msg1
+    ;printat #5, #7, str_help_msg2
+    ;printat #5, #9, str_help_msg3
+    ;printat #5, #11, str_help_msg4
+    ;printat #5, #13, str_help_msg5
+
+    ; Wait for a key press
+    getkey
+
+    ; Redisplay the template
+    scnclr
+    jsr display_template
+
+    rts
+.endproc
+
 ; PETSCII strings for the template
-str_atk:   .asciiz "ATK : "
-str_ctrl:  .asciiz "CTRL: "
-str_dec:   .asciiz "DEC : "
-str_freq:  .asciiz "FREQ: "
-str_pulse: .asciiz "PLS : "
-str_rel:   .asciiz "REL : "
-str_sus:   .asciiz "SUS : "
+str_atk:            .asciiz "ATK : "
+str_ctrl:           .asciiz "CTRL: "
+str_dec:            .asciiz "DEC : "
+str_freq:           .asciiz "FREQ: "
+str_pulse:          .asciiz "PLS : "
+str_rel:            .asciiz "REL : "
+str_sus:            .asciiz "SUS : "
+
+str_filter_res:     .asciiz "RES : "
+str_filter_cutoff:  .asciiz "CUT : "
+str_filter_flag:    .asciiz "FLG : "
+str_filter_mode:    .asciiz "MODE: "
+str_volume:         .asciiz "VOL : " 
 
 ; Global variables
-voice1: .res .sizeof(sid_voice) ; Reserve space for first SID voice structure
-voice2: .res .sizeof(sid_voice) ; Reserve space for second SID voice structure
-voice3: .res .sizeof(sid_voice) ; Reserve space for third SID voice structure
+voice1:     .res .sizeof(sid_voice)     ; Reserve space for first SID voice structure
+voice2:     .res .sizeof(sid_voice)     ; Reserve space for second SID voice structure
+voice3:     .res .sizeof(sid_voice)     ; Reserve space for third SID voice structure
+general:    .res .sizeof(sid_general)   ; Reserve space for SID general structure
 
-column:     .res 1              ; Current selected column (0, 1, or 2) 
-row:        .res 1              ; Current selected row (1 - 7)
+column:     .res 1                      ; Current selected column (0, 1, or 2) 
+row:        .res 1                      ; Current selected row (1 - 12), for rows 8-12 column is ignored
 
 .endscope

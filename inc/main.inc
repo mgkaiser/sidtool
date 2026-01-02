@@ -8,18 +8,40 @@
     FLAG_RINGMOD    = $04
     FLAG_SYNC       = $02
     FLAG_GATE       = $01
-.endenum    
+.endenum 
+
+.enum sid_filter_flags
+    FILTER_VOICE1  = $01
+    FILTER_VOICE2  = $02
+    FILTER_VOICE3  = $04
+    FILTER_EXTERNAL= $08
+.endenum
+
+.enum sid_filter_modes
+    FILTER_LOW_PASS    = $10
+    FILTER_BAND_PASS   = $20
+    FILTER_HIGH_PASS   = $40
+    FILTER_MUTE_VOICE3 = $80
+.endenum
 
 ; Structure definition for a SID voice
 .struct sid_voice
-    freq        .word    
-    pulse_width .word
-    ctrl        .byte    
-    attack      .byte
-    decay       .byte     
-    sustain     .byte    
-    release     .byte       
+    freq            .word   ; 16-bit Frequency
+    pulse_width     .word   ; 12-bit Pulse Width
+    ctrl            .byte   ; Control flags
+    attack          .byte   ; 4-bit attack rate
+    decay           .byte   ; 4-bit decay rate  
+    sustain         .byte   ; 4-bit sustain level 
+    release         .byte   ; 4-bit release rate
 .endstruct  
+
+.struct sid_general
+    filter_cutoff   .word   ; 12-bit cutoff frequency
+    filter_res      .byte   ; 4-bit resonance
+    filter_flag     .byte   ; filter routing flags
+    filter_mode     .byte   ; filter mode flags
+    volume          .byte   ; master volume (4 bits)    
+.endstruct
 
 ; Set or clear reverse video based on current cursor position
 ; Usage:
