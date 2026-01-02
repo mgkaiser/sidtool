@@ -49,18 +49,30 @@ main_loop:
     jsr display_data
 
     ; Update the SID with the data
+    jsr update_sid  
 
     ; Check keys and act upon them
-    getkey
-    goto_if_char 'Q', exit_program    
+    getkey    
     gosub_if_char '+', process_plus1
     gosub_if_char '-', process_minus1
     gosub_if_char 219, process_plus10                   ; SHIFT +
     gosub_if_char 221, process_minus10                  ; SHIFT -
+    gosub_if_char 166, process_plus100                  ; CMD +
+    gosub_if_char 220, process_minus100                 ; CMD -
     gosub_if_char PETSCII_CURSOR_LEFT, process_left
     gosub_if_char PETSCII_CURSOR_RIGHT, process_right
     gosub_if_char PETSCII_CURSOR_UP, process_up
     gosub_if_char PETSCII_CURSOR_DOWN, process_down
+    gosub_if_char PETSCII_F1, voice1_toggle
+    gosub_if_char PETSCII_F3, voice2_toggle
+    gosub_if_char PETSCII_F5, voice3_toggle
+    gosub_if_char 'N', noise_toggle
+    gosub_if_char 'P', pulse_toggle
+    gosub_if_char 'S', sawtooth_toggle
+    gosub_if_char 'T', triangle_toggle
+    gosub_if_char 'Y', sync_toggle
+    gosub_if_char 'R', ringmod_toggle
+    goto_if_char 'Q', exit_program    
 
     ; Loop if they didn't quit
     jmp main_loop
@@ -70,8 +82,241 @@ exit_program:
 
 .endproc
 
-.proc process_plus1 : near
-    
+.proc update_sid
+    lda #<voice1
+    sta PTR1
+    lda #>voice1
+    sta PTR1+1
+    lda #$00
+    sta TMP1
+    jsr update_sid_voice
+
+    lda #<voice2
+    sta PTR1
+    lda #>voice2
+    sta PTR1+1
+    lda #$07
+    sta TMP1
+    jsr update_sid_voice
+
+    lda #<voice3
+    sta PTR1
+    lda #>voice3
+    sta PTR1+1
+    lda #$0e
+    sta TMP1
+    jsr update_sid_voice
+
+    lda #$15
+    sta SID_REG_MODE_VOL
+
+    rts
+.endproc
+
+.proc update_sid_voice
+    ldx TMP1
+
+    ; Load registers 0 and 1 for voice
+    ldy #sid_voice::freq
+    lda(PTR1), y
+    sta SID1_BASE, x
+    ldy #sid_voice::freq + 1
+    inx
+    lda(PTR1), y
+    sta SID1_BASE, x
+    inx
+
+    ; Load registers 2 and 3 for voice
+    ldy #sid_voice::pulse_width
+    lda(PTR1), y
+    sta SID1_BASE, x
+    ldy #sid_voice::pulse_width + 1
+    inx
+    lda(PTR1), y
+    sta SID1_BASE, x
+    inx
+
+    ; Load register 4 for voice
+    ldy #sid_voice::ctrl
+    lda(PTR1), y
+    sta SID1_BASE, x
+    inx
+
+    ; Load register 5 for voice
+    ldy #sid_voice::attack
+    lda(PTR1), y
+    rol
+    rol
+    rol
+    rol
+    ldy #sid_voice::decay
+    ora (PTR1), y
+    sta SID1_BASE, x
+    inx
+
+    ; Load register 6 for voice
+    ldy #sid_voice::sustain
+    lda(PTR1), y
+    rol
+    rol
+    rol
+    rol
+    ldy #sid_voice::release
+    ora (PTR1), y
+    sta SID1_BASE, x
+    inx
+
+    rts
+.endproc
+
+.proc noise_toggle: near
+    ; Get a pointer to the current voice, bail if it's null
+    jsr cur_voice_to_ptr1    
+    lda PTR1
+    ora PTR1+1
+    bne selected_column    
+    jmp exit_proc                   ; This should not happen   
+
+selected_column:    
+
+    ldy #sid_voice::ctrl
+    lda (PTR1), y
+    eor #sid_ctrl_flags::FLAG_NOISE
+    sta (PTR1), y   
+
+exit_proc:        
+    rts      
+.endproc
+
+.proc pulse_toggle: near
+    ; Get a pointer to the current voice, bail if it's null
+    jsr cur_voice_to_ptr1    
+    lda PTR1
+    ora PTR1+1
+    bne selected_column    
+    jmp exit_proc                   ; This should not happen   
+
+selected_column:  
+
+    ldy #sid_voice::ctrl
+    lda (PTR1), y
+    eor #sid_ctrl_flags::FLAG_PULSE            
+    sta (PTR1), y   
+
+exit_proc:        
+    rts      
+.endproc
+
+.proc sawtooth_toggle: near
+    ; Get a pointer to the current voice, bail if it's null
+    jsr cur_voice_to_ptr1    
+    lda PTR1
+    ora PTR1+1
+    bne selected_column    
+    jmp exit_proc                   ; This should not happen   
+
+selected_column:    
+
+    ldy #sid_voice::ctrl
+    lda (PTR1), y
+    eor #sid_ctrl_flags::FLAG_SAWTOOTH
+    sta (PTR1), y   
+
+exit_proc:              
+    rts      
+.endproc
+
+.proc triangle_toggle: near
+    ; Get a pointer to the current voice, bail if it's null
+    jsr cur_voice_to_ptr1    
+    lda PTR1
+    ora PTR1+1
+    bne selected_column    
+    jmp exit_proc                   ; This should not happen   
+
+selected_column:    
+
+    ldy #sid_voice::ctrl
+    lda (PTR1), y
+    eor #sid_ctrl_flags::FLAG_TRIANGLE
+    sta (PTR1), y   
+
+exit_proc:        
+    rts      
+.endproc
+
+.proc sync_toggle: near
+    ; Get a pointer to the current voice, bail if it's null
+    jsr cur_voice_to_ptr1    
+    lda PTR1
+    ora PTR1+1
+    bne selected_column    
+    jmp exit_proc                   ; This should not happen   
+
+selected_column:    
+
+    ldy #sid_voice::ctrl
+    lda (PTR1), y
+    eor #sid_ctrl_flags::FLAG_SYNC
+    sta (PTR1), y   
+
+exit_proc:         
+    rts      
+.endproc
+
+.proc ringmod_toggle: near
+    ; Get a pointer to the current voice, bail if it's null
+    jsr cur_voice_to_ptr1    
+    lda PTR1
+    ora PTR1+1
+    bne selected_column    
+    jmp exit_proc                   ; This should not happen   
+
+selected_column:    
+
+    ldy #sid_voice::ctrl
+    lda (PTR1), y
+    eor #sid_ctrl_flags::FLAG_RINGMOD
+    sta (PTR1), y   
+
+exit_proc:        
+    rts      
+.endproc
+
+.proc voice1_toggle: near
+    lda #<voice1
+    sta PTR1
+    lda #>voice1
+    sta PTR1+1   
+    jmp any_voice_toggle
+.endproc
+
+.proc voice2_toggle: near
+    lda #<voice2
+    sta PTR1
+    lda #>voice2
+    sta PTR1+1   
+    jmp any_voice_toggle
+.endproc
+
+.proc voice3_toggle: near
+    lda #<voice3
+    sta PTR1
+    lda #>voice3
+    sta PTR1+1   
+    jmp any_voice_toggle
+.endproc
+
+.proc any_voice_toggle: near
+    ldy #sid_voice::ctrl
+    lda (PTR1), y
+    eor #$01               
+    sta (PTR1), y   
+    rts
+.endproc
+
+.proc cur_voice_to_ptr1: near
+
     ; Select the voice structure based on the column value
     lda column        
     bne :+
@@ -94,8 +339,25 @@ exit_program:
         lda #>voice3
         sta PTR1+1
         jmp selected_column 
+    
+:   lda #$00                    ; You should never get here
+    sta PTR1
+    sta PTR1+1
+    
+selected_column:  
 
-:   jmp exit_proc                   ; This should not happen        
+exit_proc:
+    rts
+.endproc
+
+.proc process_plus1 : near
+
+    ; Get a pointer to the current voice, bail if it's null
+    jsr cur_voice_to_ptr1    
+    lda PTR1
+    ora PTR1+1
+    bne selected_column    
+    jmp exit_proc                   ; This should not happen        
 
 selected_column:               
 
@@ -103,38 +365,59 @@ selected_column:
     lda row
     cmp #$01
     bne :+        
-        add_const_to_struct_16 PTR1, sid_voice::freq, 1             ; Frequency
+        add_const_to_struct_16 PTR1, sid_voice::freq, 1, $ffff          ; Frequency
         jmp exit_proc
     
 :   cmp #$02
     bne :+
-        add_const_to_struct_16 PTR1, sid_voice::pulse_width, 1      ; Pulse Width
+        add_const_to_struct_16 PTR1, sid_voice::pulse_width, 1,$0fff    ; Pulse Width
         jmp exit_proc
 
 :   cmp #$03
     bne :+
 
         ; Control Register
+        jmp exit_proc
 
 :   cmp #$04
     bne :+
-
-        ; Attack
+        ldy #sid_voice::attack                                      ; Attack
+        clc
+        lda (PTR1), y
+        adc #$01
+        and #$0f
+        sta (PTR1), y
+        jmp exit_proc        
     
 :   cmp #$05
-    bne :+
-
-        ; Decay
+    bne :+        
+        ldy #sid_voice::decay                                       ; Decay
+        clc
+        lda (PTR1), y
+        adc #$01
+        and #$0f
+        sta (PTR1), y
+        jmp exit_proc        
 
 :   cmp #$06   
-    bne :+
-    
-        ; Sustain
+    bne :+            
+        ldy #sid_voice::sustain                                     ; Sustain
+        clc
+        lda (PTR1), y
+        adc #$01
+        and #$0f
+        sta (PTR1), y
+        jmp exit_proc        
 
 :   cmp #$07
-    bne exit_proc      ; This should not happen
-        
-        ; Release
+    bne exit_proc      ; This should not happen                
+        ldy #sid_voice::release                                     ; Release
+        clc
+        lda (PTR1), y
+        adc #$01
+        and #$0f
+        sta (PTR1), y
+        jmp exit_proc   
 
 exit_proc:
     rts
@@ -142,30 +425,12 @@ exit_proc:
 
 .proc process_minus1 : near
 
-    ; Select the voice structure based on the column value
-    lda column        
-    bne :+
-        lda #<voice1
-        sta PTR1
-        lda #>voice1
-        sta PTR1+1                
-        jmp selected_column
-:   cmp #$01    
-    bne :+
-        lda #<voice2
-        sta PTR1
-        lda #>voice2
-        sta PTR1+1        
-        jmp selected_column
-:   cmp #$02    
-    bne :+
-        lda #<voice3
-        sta PTR1
-        lda #>voice3
-        sta PTR1+1
-        jmp selected_column 
-
-:   jmp exit_proc                   ; This should not happen        
+    ; Get a pointer to the current voice, bail if it's null
+    jsr cur_voice_to_ptr1    
+    lda PTR1
+    ora PTR1+1
+    bne selected_column    
+    jmp exit_proc                   ; This should not happen         
 
 selected_column:      
 
@@ -173,38 +438,59 @@ selected_column:
     lda row
     cmp #$01
     bne :+
-        sub_const_from_struct_16 PTR1, sid_voice::freq, 1           ; Frequency        
+        sub_const_from_struct_16 PTR1, sid_voice::freq, 1, $ffff        ; Frequency        
         jmp exit_proc
         
 :   cmp #$02
     bne :+
-        sub_const_from_struct_16 PTR1, sid_voice::pulse_width, 1    ; Pulse Width
+        sub_const_from_struct_16 PTR1, sid_voice::pulse_width, 1, $0fff ; Pulse Width
         jmp exit_proc
 
 :   cmp #$03
     bne :+
 
         ; Control Register
+        jmp exit_proc
 
 :   cmp #$04
     bne :+
-
-        ; Attack
+        ldy #sid_voice::attack                                      ; Attack
+        sec
+        lda (PTR1), y
+        sbc #$01
+        and #$0f
+        sta (PTR1), y
+        jmp exit_proc        
     
 :   cmp #$05
-    bne :+
-
-        ; Decay
+    bne :+        
+        ldy #sid_voice::decay                                       ; Decay
+        sec
+        lda (PTR1), y
+        sbc #$01
+        and #$0f
+        sta (PTR1), y
+        jmp exit_proc        
 
 :   cmp #$06   
-    bne :+
-    
-        ; Sustain
+    bne :+            
+        ldy #sid_voice::sustain                                     ; Sustain
+        sec
+        lda (PTR1), y
+        sbc #$01
+        and #$0f
+        sta (PTR1), y
+        jmp exit_proc        
 
 :   cmp #$07
-    bne exit_proc      ; This should not happen
-        
-        ; Release
+    bne exit_proc      ; This should not happen                
+        ldy #sid_voice::release                                     ; Release
+        sec
+        lda (PTR1), y
+        sbc #$01
+        and #$0f
+        sta (PTR1), y
+        jmp exit_proc        
 
 exit_proc:
     rts
@@ -221,6 +507,24 @@ loop:
 
 .proc process_minus10 : near        
     ldx #$0a
+loop:
+    jsr process_minus1
+    dex
+    bne loop
+    rts
+.endproc
+
+.proc process_plus100 : near
+    ldx #100
+loop:
+    jsr process_plus1
+    dex
+    bne loop
+    rts
+.endproc
+
+.proc process_minus100 : near        
+    ldx #100
 loop:
     jsr process_minus1
     dex

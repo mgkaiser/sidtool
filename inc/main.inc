@@ -46,26 +46,30 @@
 :    
 .endmacro
 
-.macro add_const_to_struct_16 ptr, ofs, value
+.macro add_const_to_struct_16 ptr, ofs, value, mask
     clc
     ldy #ofs
     lda (ptr), y
     adc #.lobyte(value)
+    and #.lobyte(mask)
     sta (ptr), y
     ldy #ofs+1
     lda (ptr), y
     adc #.hibyte(value)    
+    and #.hibyte(mask)
     sta (ptr), y
 .endmacro
 
-.macro sub_const_from_struct_16 ptr, ofs, value
+.macro sub_const_from_struct_16 ptr, ofs, value, mask
     sec
     ldy #ofs
     lda (ptr), y
     sbc #.lobyte(value)
+    and #.lobyte(mask)
     sta (ptr), y
     ldy #ofs+1
     lda (ptr), y
     sbc #.hibyte(value)    
+    and #.hibyte(mask)
     sta (ptr), y
 .endmacro

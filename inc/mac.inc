@@ -58,9 +58,10 @@ SID_REG_FILTER_CUTOFF_LO = SID1_BASE + $15
 SID_REG_FILTER_CUTOFF_HI = SID1_BASE + $16
 SID_REG_FILTER_RES_FBG   = SID1_BASE + $17
 SID_REG_MODE_VOL         = SID1_BASE + $18
-SID_REG_ENV1             = SID1_BASE + $19
-SID_REG_ENV2             = SID1_BASE + $1a
-SID_REG_ENV3             = SID1_BASE + $1b
+SID_REG_PADDLE_X         = SID1_BASE + $19
+SID_REG_PADDLE_Y         = SID1_BASE + $1a
+SID_REG_OSC3             = SID1_BASE + $1b
+SID_REG_ENV3             = SID1_BASE + $1c
 
 ; PETSCII Control Codes (From https://www.c64-wiki.com/wiki/PETSCII)
 PETSCII_CLR_SCREEN  = $93
