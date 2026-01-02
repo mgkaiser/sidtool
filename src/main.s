@@ -82,6 +82,15 @@ exit_program:
 
 .endproc
 
+; Update the SID registers from the voice structures
+; Usage:
+;   Nothing
+; Returns:
+;   Nothing
+; Results:
+;   SID registers updated from voice structures
+; Destroys:
+;   A, X, Y, TMP1, PTR1
 .proc update_sid
     lda #<voice1
     sta PTR1
@@ -113,6 +122,16 @@ exit_program:
     rts
 .endproc
 
+; Update a single SID voice from its structure
+; Usage:
+;   TMP1 = voice offset (0, 7, or 14)
+;   PTR1 = pointer to voice structure
+; Returns:
+;   Nothing
+; Results:
+;   SID voice registers updated from voice structure
+; Destroys:
+;   A, X, Y, TMP1, PTR1
 .proc update_sid_voice
     ldx TMP1
 
@@ -169,6 +188,15 @@ exit_program:
     rts
 .endproc
 
+; Toggle the noise flag in the control register of the selected voice
+; Usage:
+;   Nothing
+; Returns:
+;   Nothing
+; Results:
+;   Noise flag toggled in control register of selected voice
+; Destroys:
+;   A, Y, PTR1
 .proc noise_toggle: near
     ; Get a pointer to the current voice, bail if it's null
     jsr cur_voice_to_ptr1    
@@ -188,6 +216,15 @@ exit_proc:
     rts      
 .endproc
 
+; Toggle the pulse flag in the control register of the selected voice
+; Usage:
+;   Nothing
+; Returns:
+;   Nothing
+; Results:
+;   Pulse flag toggled in control register of selected voice
+; Destroys:
+;   A, Y, PTR1
 .proc pulse_toggle: near
     ; Get a pointer to the current voice, bail if it's null
     jsr cur_voice_to_ptr1    
@@ -207,6 +244,15 @@ exit_proc:
     rts      
 .endproc
 
+; Toggle the sawtooth flag in the control register of the selected voice
+; Usage:
+;   Nothing
+; Returns:
+;   Nothing
+; Results:
+;   Sawtooth flag toggled in control register of selected voice
+; Destroys:
+;   A, Y, PTR1
 .proc sawtooth_toggle: near
     ; Get a pointer to the current voice, bail if it's null
     jsr cur_voice_to_ptr1    
@@ -226,6 +272,15 @@ exit_proc:
     rts      
 .endproc
 
+; Toggle the triangle flag in the control register of the selected voice
+; Usage:
+;   Nothing
+; Returns:
+;   Nothing
+; Results:
+;   Triangle flag toggled in control register of selected voice
+; Destroys:
+;   A, Y, PTR1
 .proc triangle_toggle: near
     ; Get a pointer to the current voice, bail if it's null
     jsr cur_voice_to_ptr1    
@@ -245,6 +300,15 @@ exit_proc:
     rts      
 .endproc
 
+; Toggle the sync flag in the control register of the selected voice
+; Usage:
+;   Nothing
+; Returns:
+;   Nothing
+; Results:
+;   Sync flag toggled in control register of selected voice
+; Destroys:
+;   A, Y, PTR1
 .proc sync_toggle: near
     ; Get a pointer to the current voice, bail if it's null
     jsr cur_voice_to_ptr1    
@@ -264,6 +328,15 @@ exit_proc:
     rts      
 .endproc
 
+; Toggle the ringmod flag in the control register of the selected voice
+; Usage:
+;   Nothing
+; Returns:
+;   Nothing
+; Results:
+;   Ringmod flag toggled in control register of selected voice
+; Destroys:
+;   A, Y, PTR1
 .proc ringmod_toggle: near
     ; Get a pointer to the current voice, bail if it's null
     jsr cur_voice_to_ptr1    
@@ -283,6 +356,15 @@ exit_proc:
     rts      
 .endproc
 
+; Toggle the selected voice
+; Usage:
+;   Nothing
+; Returns:
+;   Nothing
+; Results:
+;   Selected voice changed
+; Destroys:
+;   A, PTR1
 .proc voice1_toggle: near
     lda #<voice1
     sta PTR1
@@ -291,6 +373,15 @@ exit_proc:
     jmp any_voice_toggle
 .endproc
 
+; Toggle the selected voice
+; Usage:
+;   Nothing
+; Returns:
+;   Nothing
+; Results:
+;   Selected voice changed
+; Destroys:
+;   A, PTR1
 .proc voice2_toggle: near
     lda #<voice2
     sta PTR1
@@ -299,6 +390,15 @@ exit_proc:
     jmp any_voice_toggle
 .endproc
 
+; Toggle the selected voice
+; Usage:
+;   Nothing
+; Returns:
+;   Nothing
+; Results:
+;   Selected voice changed
+; Destroys:
+;   A, PTR1
 .proc voice3_toggle: near
     lda #<voice3
     sta PTR1
@@ -307,6 +407,15 @@ exit_proc:
     jmp any_voice_toggle
 .endproc
 
+; Toggle the selected voice
+; Usage:
+;   PTR1 = pointer to voice structure
+; Returns:
+;   Nothing
+; Results:
+;   Selected voice changed
+; Destroys:
+;   A, Y, PTR1
 .proc any_voice_toggle: near
     ldy #sid_voice::ctrl
     lda (PTR1), y
@@ -315,6 +424,15 @@ exit_proc:
     rts
 .endproc
 
+; Get a pointer to the current voice structure based on the column
+; Usage:
+;   column = current column (0, 1, or 2)
+; Returns:
+;   PTR1 = pointer to current voice structure, or null if invalid column
+; Results:
+;   PTR1 set to voice structure pointer or null
+; Destroys:
+;   A, PTR1
 .proc cur_voice_to_ptr1: near
 
     ; Select the voice structure based on the column value
@@ -350,6 +468,15 @@ exit_proc:
     rts
 .endproc
 
+; Process a +1 command for the selected column
+; Usage:
+;   Nothing
+; Returns:
+;   Nothing
+; Results:
+;   Value in selected column incremented by 1
+; Destroys:
+;   A, Y, PTR1
 .proc process_plus1 : near
 
     ; Get a pointer to the current voice, bail if it's null
@@ -423,6 +550,15 @@ exit_proc:
     rts
 .endproc
 
+; Process a -1 command for the selected column
+; Usage:
+;   Nothing
+; Returns:
+;   Nothing
+; Results:
+;   Value in selected column decremented by 1
+; Destroys:
+;   A, Y, PTR1
 .proc process_minus1 : near
 
     ; Get a pointer to the current voice, bail if it's null
@@ -496,6 +632,15 @@ exit_proc:
     rts
 .endproc
 
+; Process a +10 command for the selected column
+; Usage:
+;   Nothing
+; Returns:
+;   Nothing
+; Results:
+;   Value in selected column incremented by 10
+; Destroys:
+;   A, Y, PTR1
 .proc process_plus10 : near
     ldx #$0a
 loop:
@@ -505,6 +650,15 @@ loop:
     rts
 .endproc
 
+; Process a -10 command for the selected column
+; Usage:
+;   Nothing
+; Returns:
+;   Nothing
+; Results:
+;   Value in selected column decremented by 10
+; Destroys:
+;   A, Y, PTR1
 .proc process_minus10 : near        
     ldx #$0a
 loop:
@@ -513,6 +667,15 @@ loop:
     bne loop
     rts
 .endproc
+
+; Process a +100 command for the selected column
+; Usage:
+;   Nothing
+; Returns:
+;   Nothing
+; Results:
+;   Value in selected column incremented by 100
+; Destroys:
 
 .proc process_plus100 : near
     ldx #100
@@ -523,6 +686,15 @@ loop:
     rts
 .endproc
 
+; Process a -100 command for the selected column
+; Usage:
+;   Nothing
+; Returns:
+;   Nothing
+; Results:
+;   Value in selected column decremented by 100
+; Destroys:
+;   A, Y, PTR1
 .proc process_minus100 : near        
     ldx #100
 loop:
@@ -532,6 +704,15 @@ loop:
     rts
 .endproc
 
+; Process a left cursor command
+; Usage:
+;   Nothing
+; Returns:
+;   Nothing
+; Results:
+;   Column decremented, wrapping around if necessary
+; Destroys:
+;   A
 .proc process_left : near
 
     ; column--
@@ -549,6 +730,15 @@ loop:
 :   rts
 .endproc
 
+; Process a right cursor command
+; Usage:
+;   Nothing
+; Returns:
+;   Nothing
+; Results:
+;   Column incremented, wrapping around if necessary
+; Destroys:
+;   A
 .proc process_right : near
     
     ; column++    
@@ -566,6 +756,15 @@ loop:
  :  rts
 .endproc
 
+; Process an up cursor command
+; Usage:
+;   Nothing
+; Returns:
+;   Nothing
+; Results:
+;   Row decremented, wrapping around if necessary
+; Destroys:
+;   A
 .proc process_up : near
 
     ; row--
@@ -583,6 +782,15 @@ loop:
 :   rts
 .endproc
 
+; Process a down cursor command
+; Usage:
+;   Nothing
+; Returns:
+;   Nothing
+; Results:
+;   Row incremented, wrapping around if necessary
+; Destroys:
+;   A
 .proc process_down : near
 
     ; row++
@@ -771,7 +979,7 @@ voice1: .res .sizeof(sid_voice) ; Reserve space for first SID voice structure
 voice2: .res .sizeof(sid_voice) ; Reserve space for second SID voice structure
 voice3: .res .sizeof(sid_voice) ; Reserve space for third SID voice structure
 
-column:     .res 1
-row:        .res 1
+column:     .res 1              ; Current selected column (0, 1, or 2) 
+row:        .res 1              ; Current selected row (1 - 7)
 
 .endscope
