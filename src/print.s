@@ -43,7 +43,7 @@
 print_loop:
     lda (PTR1), y
     beq done_printing
-    jsr $FFD2          ; C64 KERNAL CHROUT routine
+    jsr KERNAL_CHROUT          ; C64 KERNAL CHROUT routine
     iny
     jmp print_loop
 done_printing:

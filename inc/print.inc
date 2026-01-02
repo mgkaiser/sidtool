@@ -5,16 +5,41 @@
     .import convert_16bitptr_to_decimal: near
 .endif
 
-.macro printat y_pos, x_pos, str_addr
-    ldx #x_pos
-    ldy #y_pos
+.macro printat col_pos, row_pos, str_addr
+    ldx row_pos
+    ldy col_pos
     jsr gotoxy
     ldx #<str_addr
     ldy #>str_addr
     jsr print
 .endmacro
 
+.macro print_decimal_at_16 col_pos, row_pos, value_ptr, value_ofs
+    ldx row_pos
+    ldy col_pos
+    jsr gotoxy
+    ldy #value_ofs
+    lda (value_ptr),y
+    sta TMP1
+    iny
+    lda (value_ptr),y
+    sta TMP1+1    
+    jsr convert_16bit_to_decimal
+.endmacro
+
+.macro print_decimal_at_8 col_pos, row_pos, value_ptr, value_ofs
+    ldx row_pos
+    ldy col_pos
+    jsr gotoxy
+    ldy #value_ofs
+    lda (value_ptr),y
+    sta TMP1
+    lda #$00    
+    sta TMP1+1    
+    jsr convert_16bit_to_decimal
+.endmacro
+
 .macro scnclr
-    lda #$93          ; Clear screen code
-    jsr $FFD2         ; C64 KERNAL CHROUT routine   
+    lda #PETSCII_CLR_SCREEN   ; Clear screen code
+    jsr KERNAL_CHROUT         ; C64 KERNAL CHROUT routine   
 .endmacro
