@@ -74,7 +74,9 @@ done_printing:
 .endproc
 
 ; Convert the 16-bit number in TMP1:TMP1 + 1 to a decimal string
-; and print it using the print routine.
+; and print it using the print routine.  This will always return
+; a string of 5 characters.  Numbers will be right justified with 
+; leading spaces.
 ; usage:
 ;   TMP1:TMP1 + 1 = 16-bit number to convert
 ;   jsr convert_16bit_to_decimal
