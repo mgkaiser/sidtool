@@ -62,10 +62,22 @@ SID_REG_ENV1             = SID1_BASE + $19
 SID_REG_ENV2             = SID1_BASE + $1a
 SID_REG_ENV3             = SID1_BASE + $1b
 
-; PETSCII Control Codes
-PETSCII_CLR_SCREEN = $93
-PETSCII_REVERSE_ON = $12
-PETSCII_REVERSE_OFF= $92
+; PETSCII Control Codes (From https://www.c64-wiki.com/wiki/PETSCII)
+PETSCII_CLR_SCREEN  = $93
+PETSCII_REVERSE_ON  = $12
+PETSCII_REVERSE_OFF = $92
+PETSCII_CURSOR_UP   = $91
+PETSCII_CURSOR_DOWN = $11
+PETSCII_CURSOR_LEFT = $9d
+PETSCII_CURSOR_RIGHT= $1d  
+PETSCII_F1          = $85
+PETSCII_F3          = $86
+PETSCII_F5          = $87
+PETSCII_F7          = $88
+PETSCII_F2          = $89
+PETSCII_F4          = $8a
+PETSCII_F6          = $8c
+PETSCII_F8          = $8e
 
 ; PETSCII Control Codes for Colors
 PETSCII_COL_BLACK       = $90

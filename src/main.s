@@ -52,8 +52,15 @@ main_loop:
 
     ; Check keys and act upon them
     getkey
-    cmp #'Q'
-    beq exit_program
+    goto_if_char 'Q', exit_program    
+    gosub_if_char '+', process_plus1
+    gosub_if_char '-', process_minus1
+    gosub_if_char 219, process_plus10                   ; SHIFT +
+    gosub_if_char 221, process_minus10                  ; SHIFT -
+    gosub_if_char PETSCII_CURSOR_LEFT, process_left
+    gosub_if_char PETSCII_CURSOR_RIGHT, process_right
+    gosub_if_char PETSCII_CURSOR_UP, process_up
+    gosub_if_char PETSCII_CURSOR_DOWN, process_down
 
     ; Loop if they didn't quit
     jmp main_loop
@@ -61,6 +68,238 @@ main_loop:
 exit_program:        
     rts
 
+.endproc
+
+.proc process_plus1 : near
+    
+    ; Select the voice structure based on the column value
+    lda column        
+    bne :+
+        lda #<voice1
+        sta PTR1
+        lda #>voice1
+        sta PTR1+1                
+        jmp selected_column
+:   cmp #$01    
+    bne :+
+        lda #<voice2
+        sta PTR1
+        lda #>voice2
+        sta PTR1+1        
+        jmp selected_column
+:   cmp #$02    
+    bne :+
+        lda #<voice3
+        sta PTR1
+        lda #>voice3
+        sta PTR1+1
+        jmp selected_column 
+
+:   jmp exit_proc                   ; This should not happen        
+
+selected_column:               
+
+    ; Increment the value in the selected column
+    lda row
+    cmp #$01
+    bne :+        
+        add_const_to_struct_16 PTR1, sid_voice::freq, 1             ; Frequency
+    
+:   cmp #$02
+    bne :+
+        add_const_to_struct_16 PTR1, sid_voice::pulse_width, 1      ; Pulse Width
+
+:   cmp #$03
+    bne :+
+
+        ; Control Register
+
+:   cmp #$04
+    bne :+
+
+        ; Attack
+    
+:   cmp #$05
+    bne :+
+
+        ; Decay
+
+:   cmp #$06   
+    bne :+
+    
+        ; Sustain
+
+:   cmp #$07
+    bne exit_proc      ; This should not happen
+        
+        ; Release
+
+exit_proc:
+    rts
+.endproc
+
+.proc process_minus1 : near
+
+    ; Select the voice structure based on the column value
+    lda column        
+    bne :+
+        lda #<voice1
+        sta PTR1
+        lda #>voice1
+        sta PTR1+1                
+        jmp selected_column
+:   cmp #$01    
+    bne :+
+        lda #<voice2
+        sta PTR1
+        lda #>voice2
+        sta PTR1+1        
+        jmp selected_column
+:   cmp #$02    
+    bne :+
+        lda #<voice3
+        sta PTR1
+        lda #>voice3
+        sta PTR1+1
+        jmp selected_column 
+
+:   jmp exit_proc                   ; This should not happen        
+
+selected_column:      
+
+    ; Increment the value in the selected column
+    lda row
+    cmp #$01
+    bne :+
+        sub_const_from_struct_16 PTR1, sid_voice::freq, 1           ; Frequency        
+        
+:   cmp #$02
+    bne :+
+        sub_const_from_struct_16 PTR1, sid_voice::pulse_width, 1    ; Pulse Width
+
+:   cmp #$03
+    bne :+
+
+        ; Control Register
+
+:   cmp #$04
+    bne :+
+
+        ; Attack
+    
+:   cmp #$05
+    bne :+
+
+        ; Decay
+
+:   cmp #$06   
+    bne :+
+    
+        ; Sustain
+
+:   cmp #$07
+    bne exit_proc      ; This should not happen
+        
+        ; Release
+
+exit_proc:
+    rts
+.endproc
+
+.proc process_plus10 : near
+    jsr process_plus1
+    jsr process_plus1
+    jsr process_plus1
+    jsr process_plus1
+    jsr process_plus1
+    jsr process_plus1
+    jsr process_plus1
+    jsr process_plus1
+    jsr process_plus1
+    jsr process_plus1
+    rts
+.endproc
+
+.proc process_minus10 : near    
+    jsr process_minus1
+    jsr process_minus1
+    jsr process_minus1
+    jsr process_minus1
+    jsr process_minus1
+    jsr process_minus1
+    jsr process_minus1
+    jsr process_minus1
+    jsr process_minus1
+    jsr process_minus1    
+    rts
+.endproc
+
+.proc process_left : near
+
+    ; column--
+    sec
+    lda column
+    sbc #$01
+    sta column
+
+    ; Did we go below 0?
+    cmp #$ff
+    bne :+
+        lda #$00
+        sta column    
+
+:   rts
+.endproc
+
+.proc process_right : near
+    
+    ; column++    
+    clc
+    lda column
+    adc #$01
+    sta column
+
+    ; Did we go above 2?
+    cmp #$03
+    bne :+
+        lda #$00
+        sta column    
+
+ :  rts
+.endproc
+
+.proc process_up : near
+
+    ; row--
+    sec
+    lda row
+    sbc #$01
+    sta row
+
+    ; Did we go below 1?
+    cmp #$00
+    bne :+
+        lda #$07
+        sta row     
+    
+:   rts
+.endproc
+
+.proc process_down : near
+
+    ; row++
+    clc
+    lda row
+    adc #$01
+    sta row
+
+    ; Did we go above 7?
+    cmp #$08
+    bne :+
+        lda #$01
+        sta row
+
+:   rts
 .endproc
 
 ; Display the template on the screen

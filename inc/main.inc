@@ -33,3 +33,39 @@
     jsr KERNAL_CHROUT
 :
 .endmacro
+
+.macro goto_if_char char, target 
+    cmp #char
+    beq target
+.endmacro
+
+.macro gosub_if_char char, target 
+    cmp #char
+    bne :+
+    jsr target
+:    
+.endmacro
+
+.macro add_const_to_struct_16 ptr, ofs, value
+    clc
+    ldy #ofs
+    lda (ptr), y
+    adc #.lobyte(value)
+    sta (ptr), y
+    ldy #ofs+1
+    lda (ptr), y
+    adc #.hibyte(value)    
+    sta (ptr), y
+.endmacro
+
+.macro sub_const_from_struct_16 ptr, ofs, value
+    sec
+    ldy #ofs
+    lda (ptr), y
+    sbc #.lobyte(value)
+    sta (ptr), y
+    ldy #ofs+1
+    lda (ptr), y
+    sbc #.hibyte(value)    
+    sta (ptr), y
+.endmacro
