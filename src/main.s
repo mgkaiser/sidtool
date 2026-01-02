@@ -10,6 +10,15 @@
 
 ; Define exports for all public functions in this module
 
+; Main program entry point
+; Usage:
+;   Nothing
+; Returns:
+;   Nothing
+; Results:
+;   Main program loop executed
+; Destroys:
+;   All registers
 .proc main: near
 
     ; Make the background black and the text light green
@@ -45,6 +54,15 @@ exit_program:
 
 .endproc
 
+; Display the template on the screen
+; Usage:
+;   Nothing
+; Returns:
+;   Nothing
+; Results:
+;   Template displayed on screen
+; Destroys:
+;   A, X, Y
 .proc display_template : near
     
     printat #0, #1, str_freq
