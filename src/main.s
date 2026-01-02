@@ -211,30 +211,20 @@ exit_proc:
 .endproc
 
 .proc process_plus10 : near
+    ldx #$0a
+loop:
     jsr process_plus1
-    jsr process_plus1
-    jsr process_plus1
-    jsr process_plus1
-    jsr process_plus1
-    jsr process_plus1
-    jsr process_plus1
-    jsr process_plus1
-    jsr process_plus1
-    jsr process_plus1
+    dex
+    bne loop
     rts
 .endproc
 
-.proc process_minus10 : near    
+.proc process_minus10 : near        
+    ldx #$0a
+loop:
     jsr process_minus1
-    jsr process_minus1
-    jsr process_minus1
-    jsr process_minus1
-    jsr process_minus1
-    jsr process_minus1
-    jsr process_minus1
-    jsr process_minus1
-    jsr process_minus1
-    jsr process_minus1    
+    dex
+    bne loop
     rts
 .endproc
 
