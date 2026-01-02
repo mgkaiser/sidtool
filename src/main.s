@@ -104,10 +104,12 @@ selected_column:
     cmp #$01
     bne :+        
         add_const_to_struct_16 PTR1, sid_voice::freq, 1             ; Frequency
+        jmp exit_proc
     
 :   cmp #$02
     bne :+
         add_const_to_struct_16 PTR1, sid_voice::pulse_width, 1      ; Pulse Width
+        jmp exit_proc
 
 :   cmp #$03
     bne :+
@@ -172,10 +174,12 @@ selected_column:
     cmp #$01
     bne :+
         sub_const_from_struct_16 PTR1, sid_voice::freq, 1           ; Frequency        
+        jmp exit_proc
         
 :   cmp #$02
     bne :+
         sub_const_from_struct_16 PTR1, sid_voice::pulse_width, 1    ; Pulse Width
+        jmp exit_proc
 
 :   cmp #$03
     bne :+
