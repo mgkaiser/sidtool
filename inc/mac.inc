@@ -13,6 +13,57 @@ PTR3 = $9b
 PTR4 = $9E
 PTR5 = $b2
 
+; X-16 Compatible Pseudo-registers
+R0 = $02
+R1 = $04
+R2 = $06
+R3 = $08
+R4 = $0A
+R5 = $0C
+R6 = $0E
+R7 = $10
+R8 = $12
+R9 = $14
+R10= $16
+R11= $18
+R12= $1A
+R13= $1C
+R14= $1E
+R15= $20
+
+; X-16 Compatible Pseudo-registers as L/H
+R0L = R0
+R0H = R0 + 1
+R1L = R1
+R1H = R1 + 1
+R2L = R2
+R2H = R2 + 1
+R3L = R3
+R3H = R3 + 1
+R4L = R4
+R4H = R4 + 1
+R5L = R5
+R5H = R5 + 1
+R6L = R6
+R6H = R6 + 1
+R7L = R7
+R7H = R7 + 1
+R8L = R8
+R8H = R8 + 1
+R9L = R9
+R9H = R9 + 1
+R10L= R10
+R10H= R10 + 1
+R11L= R11
+R11H= R11 + 1
+R12L= R12
+R12H= R12 + 1
+R13L= R13
+R13H= R13 + 1
+R14L= R14
+R14H= R14 + 1
+R15L= R15
+R15H= R15 + 1
 
 ; Constant for KERNAL API
 KERNAL_CHROUT   = $FFD2

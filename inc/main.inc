@@ -1,3 +1,7 @@
+.if !.xmatch(current_file, "main.s")
+    .import display_template: near    
+.endif
+
 ; Enum to define SID control flags
 .enum sid_ctrl_flags    
     FLAG_NOISE      = $80
@@ -123,6 +127,25 @@
     sta (ptr), y
 .endmacro
 
+; Add a constant to an 8-bit value in a structure
+; Usage:
+;   ptr:   Pointer to structure
+;   ofs:   Offset within structure
+;   value: Constant to add
+;   mask:  Mask to apply after addition
+; Results:
+;   8-bit value at structure offset incremented by constant and masked
+; Destroys:
+;   A, Y
+.macro add_const_to_struct_8 ptr, ofs, value, mask
+    clc
+    ldy #ofs
+    lda (ptr), y
+    adc #.lobyte(value)
+    and #.lobyte(mask)
+    sta (ptr), y    
+.endmacro
+
 ; Subtract a constant from a 16-bit value in a structure
 ; Usage:
 ;   ptr:   Pointer to structure
@@ -145,4 +168,23 @@
     sbc #.hibyte(value)    
     and #.hibyte(mask)
     sta (ptr), y
+.endmacro
+
+; Subtract a constant from an 8-bit value in a structure
+; Usage:
+;   ptr:   Pointer to structure
+;   ofs:   Offset within structure
+;   value: Constant to subtract
+;   mask:  Mask to apply after subtraction
+; Results:
+;   8-bit value at structure offset decremented by constant and masked
+; Destroys:
+;   A, Y
+.macro sub_const_from_struct_8 ptr, ofs, value, mask
+    sec
+    ldy #ofs
+    lda (ptr), y
+    sbc #.lobyte(value)
+    and #.lobyte(mask)
+    sta (ptr), y    
 .endmacro

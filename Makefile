@@ -29,7 +29,8 @@ MAIN_ROOT = sidtest
 # Define sources for the main program and overlays
 MAIN_SOURCES = 	src/main.s \
 				src/print.s \
-				src/math.s
+				src/math.s \
+				src/help.s 
 
 # Define output binaries
 MAIN_BIN = $(BUILD_DIR)/$(MAIN_ROOT).prg

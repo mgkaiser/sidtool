@@ -4,11 +4,13 @@
 .include "mac.inc"
 .include "main.inc"
 .include "print.inc"
+.include "help.inc"
 .include "basicstub.inc"    ; ONLY include this in main.s.  MUST be last include
 
 .segment "MAIN"
 
 ; Define exports for all public functions in this module
+.export display_template 
 
 ; Main program entry point
 ; Usage:
@@ -477,7 +479,7 @@ exit_proc:
 ; Results:
 ;   Value in selected column incremented by 1
 ; Destroys:
-;   A, Y, PTR1
+;   A, Y, PTR1, PTR2
 .proc process_plus1 : near
 
     ; Get a pointer to the current voice, bail if it's null
@@ -486,6 +488,12 @@ exit_proc:
     ora PTR1+1
     bne selected_column    
     jmp exit_proc                   ; This should not happen        
+
+    ; PTR2 = sid_general structure
+    ldx #<general
+    ldy #>general
+    stx PTR2
+    sty PTR2+1    
 
 selected_column:               
 
@@ -498,78 +506,59 @@ selected_column:
     
 :   cmp #$02
     bne :+
-        add_const_to_struct_16 PTR1, sid_voice::pulse_width, 1,$0fff    ; Pulse Width
+        add_const_to_struct_16 PTR1, sid_voice::pulse_width, 1, $0fff   ; Pulse Width
         jmp exit_proc
 
 :   cmp #$03
     bne :+
 
         ; Control Register
+        ; This is not incremented, but rather set bitwise by other keys
         jmp exit_proc
 
 :   cmp #$04
     bne :+
-        ldy #sid_voice::attack                                      ; Attack
-        clc
-        lda (PTR1), y
-        adc #$01
-        and #$0f
-        sta (PTR1), y
+        add_const_to_struct_8 PTR1, sid_voice::attack, 1, $0f        
         jmp exit_proc        
     
 :   cmp #$05
-    bne :+        
-        ldy #sid_voice::decay                                       ; Decay
-        clc
-        lda (PTR1), y
-        adc #$01
-        and #$0f
-        sta (PTR1), y
+    bne :+                
+        add_const_to_struct_8 PTR1, sid_voice::decay, 1, $0f        
         jmp exit_proc        
 
 :   cmp #$06   
     bne :+            
-        ldy #sid_voice::sustain                                     ; Sustain
-        clc
-        lda (PTR1), y
-        adc #$01
-        and #$0f
-        sta (PTR1), y
+        add_const_to_struct_8 PTR1, sid_voice::sustain, 1, $0f                
         jmp exit_proc        
 
 :   cmp #$07
-    bne :+  
-        ldy #sid_voice::release                                     ; Release
-        clc
-        lda (PTR1), y
-        adc #$01
-        and #$0f
-        sta (PTR1), y
+    bne :+          
+        add_const_to_struct_8 PTR1, sid_voice::release, 1, $0f                
         jmp exit_proc   
 
 :   cmp #$08
     bne :+  
-        ; General SID structure could go here
+        add_const_to_struct_16 PTR2, sid_general::filter_cutoff, 1, $0fff        
         jmp exit_proc
 
 :   cmp #$09
     bne :+  
-        ; General SID structure could go here
+        add_const_to_struct_8 PTR2, sid_general::filter_res, 1, $0f        
         jmp exit_proc        
 
-:   cmp #$0a
+:   cmp #$0a    
     bne :+  
-        ; General SID structure could go here
+        ; Flag to be set with other keys
         jmp exit_proc        
 
 :   cmp #$0b
     bne :+  
-        ; General SID structure could go here
+        ; Mode to be set with other keys
         jmp exit_proc        
 
 :   cmp #$0c
-    bne :+  
-        ; General SID structure could go here
+    bne :+          
+        add_const_to_struct_8 PTR2, sid_general::volume, 1, $0f        
         jmp exit_proc                
 
 :
@@ -593,92 +582,79 @@ exit_proc:
     lda PTR1
     ora PTR1+1
     bne selected_column    
-    jmp exit_proc                   ; This should not happen         
+    jmp exit_proc                   ; This should not happen        
 
-selected_column:      
+    ; PTR2 = sid_general structure
+    ldx #<general
+    ldy #>general
+    stx PTR2
+    sty PTR2+1    
+
+selected_column:               
 
     ; Increment the value in the selected column
     lda row
     cmp #$01
-    bne :+
-        sub_const_from_struct_16 PTR1, sid_voice::freq, 1, $ffff        ; Frequency        
+    bne :+        
+        sub_const_from_struct_16 PTR1, sid_voice::freq, 1, $ffff          ; Frequency
         jmp exit_proc
-        
+    
 :   cmp #$02
     bne :+
-        sub_const_from_struct_16 PTR1, sid_voice::pulse_width, 1, $0fff ; Pulse Width
+        sub_const_from_struct_16 PTR1, sid_voice::pulse_width, 1, $0fff   ; Pulse Width
         jmp exit_proc
 
 :   cmp #$03
     bne :+
 
         ; Control Register
+        ; This is not incremented, but rather set bitwise by other keys
         jmp exit_proc
 
 :   cmp #$04
     bne :+
-        ldy #sid_voice::attack                                      ; Attack
-        sec
-        lda (PTR1), y
-        sbc #$01
-        and #$0f
-        sta (PTR1), y
+        sub_const_from_struct_8 PTR1, sid_voice::attack, 1, $0f        
         jmp exit_proc        
     
 :   cmp #$05
-    bne :+        
-        ldy #sid_voice::decay                                       ; Decay
-        sec
-        lda (PTR1), y
-        sbc #$01
-        and #$0f
-        sta (PTR1), y
+    bne :+                
+        sub_const_from_struct_8 PTR1, sid_voice::decay, 1, $0f        
         jmp exit_proc        
 
 :   cmp #$06   
     bne :+            
-        ldy #sid_voice::sustain                                     ; Sustain
-        sec
-        lda (PTR1), y
-        sbc #$01
-        and #$0f
-        sta (PTR1), y
+        sub_const_from_struct_8 PTR1, sid_voice::sustain, 1, $0f                
         jmp exit_proc        
 
 :   cmp #$07
-    bne :+  
-        ldy #sid_voice::release                                     ; Release
-        sec
-        lda (PTR1), y
-        sbc #$01
-        and #$0f
-        sta (PTR1), y
-        jmp exit_proc    
+    bne :+          
+        sub_const_from_struct_8 PTR1, sid_voice::release, 1, $0f                
+        jmp exit_proc   
 
 :   cmp #$08
     bne :+  
-        ; General SID structure could go here
+        sub_const_from_struct_16 PTR2, sid_general::filter_cutoff, 1, $0fff        
         jmp exit_proc
 
 :   cmp #$09
     bne :+  
-        ; General SID structure could go here
+        sub_const_from_struct_8 PTR2, sid_general::filter_res, 1, $0f        
         jmp exit_proc        
 
-:   cmp #$0a
+:   cmp #$0a    
     bne :+  
-        ; General SID structure could go here
+        ; Flag to be set with other keys
         jmp exit_proc        
 
 :   cmp #$0b
     bne :+  
-        ; General SID structure could go here
+        ; Mode to be set with other keys
         jmp exit_proc        
 
 :   cmp #$0c
-    bne :+  
-        ; General SID structure could go here
-        jmp exit_proc        
+    bne :+          
+        sub_const_from_struct_8 PTR2, sid_general::volume, 1, $0f        
+        jmp exit_proc                
 
 :
 exit_proc:
@@ -1060,26 +1036,6 @@ loop:
     do_reverse TMP4, #7
     print_decimal_at_8 TMP4 + 1, #7, PTR2, sid_voice::release
     
-    rts
-.endproc
-
-.proc display_help : near
-    ; Clear the screen
-    scnclr
-
-    ;printat #5, #5, str_help_msg1
-    ;printat #5, #7, str_help_msg2
-    ;printat #5, #9, str_help_msg3
-    ;printat #5, #11, str_help_msg4
-    ;printat #5, #13, str_help_msg5
-
-    ; Wait for a key press
-    getkey
-
-    ; Redisplay the template
-    scnclr
-    jsr display_template
-
     rts
 .endproc
 
