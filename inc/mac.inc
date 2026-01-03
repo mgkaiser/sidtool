@@ -1,5 +1,6 @@
 
 ; Safe Zero Page locations for general use (https://www.c64-wiki.com/wiki/Zeropage)
+; All are reserved as words (2 bytes each)
 TMP1 = $f7
 TMP2 = $f9
 TMP3 = $a8
