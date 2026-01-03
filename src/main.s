@@ -5,6 +5,7 @@
 .include "main.inc"
 .include "print.inc"
 .include "help.inc"
+.include "file.inc"
 .include "basicstub.inc"    ; ONLY include this in main.s.  MUST be last include
 
 .segment "MAIN"
@@ -42,12 +43,12 @@
     ; Initialize SID voice structures
     jsr init_voices
 
-    ; Display the template
-    jsr display_template
+    ; Display the help screen before main loop begins
+    jsr display_help
 
 main_loop:    
 
-    ; Display the data
+    ; Display data
     jsr display_data
 
     ; Update the SID with the data
@@ -74,6 +75,15 @@ main_loop:
     gosub_if_char 'T', triangle_toggle
     gosub_if_char 'Y', sync_toggle
     gosub_if_char 'R', ringmod_toggle
+    gosub_if_char 'H', high_filter_toggle
+    gosub_if_char 'L', low_filter_toggle
+    gosub_if_char 'B', band_filter_toggle
+    gosub_if_char 'M', mute_voice3_toggle
+    gosub_if_char PETSCII_F2, voice1_filter_toggle
+    gosub_if_char PETSCII_F4, voice2_filter_toggle
+    gosub_if_char PETSCII_F6, voice3_filter_toggle
+    gosub_if_char 'V', save_settings
+    gosub_if_char 'G', load_settings
     gosub_if_char '?', display_help
     goto_if_char 'Q', exit_program    
 
@@ -119,7 +129,40 @@ exit_program:
     sta TMP1
     jsr update_sid_voice
 
-    lda #$15
+    ; Set pointer to general structure
+    lda #<general
+    sta PTR1
+    lda #>general
+    sta PTR1+1
+
+    ; Set filter cutoff
+    ldy #sid_general::filter_cutoff
+    lda (PTR1), y
+    sta SID_REG_FILTER_CUTOFF_LO
+    ldy #sid_general::filter_cutoff + 1
+    lda (PTR1), y
+    sta SID_REG_FILTER_CUTOFF_HI
+
+    ; Set filter resonance and routing
+    ldy #sid_general::filter_res
+    lda (PTR1), y
+    rol
+    rol
+    rol
+    rol
+    ldy #sid_general::filter_flag
+    ora (PTR1), y
+    sta SID_REG_FILTER_RES_FBG
+
+    ; Set mode and volume
+    ldy #sid_general::filter_mode
+    lda (PTR1), y
+    rol
+    rol
+    rol
+    rol
+    ldy #sid_general::volume
+    ora (PTR1), y    
     sta SID_REG_MODE_VOL
 
     rts
@@ -357,6 +400,104 @@ selected_column:
 
 exit_proc:        
     rts      
+.endproc
+
+.proc high_filter_toggle : near
+    lda #<general
+    sta PTR1
+    lda #>general
+    sta PTR1+1
+
+    ldy #sid_general::filter_mode
+    lda (PTR1), y
+    eor #sid_filter_modes::FILTER_HIGH_PASS >> 4
+    sta (PTR1), y   
+
+    rts
+.endproc 
+
+.proc low_filter_toggle : near
+    lda #<general
+    sta PTR1
+    lda #>general
+    sta PTR1+1
+
+    ldy #sid_general::filter_mode
+    lda (PTR1), y
+    eor #sid_filter_modes::FILTER_LOW_PASS >> 4
+    sta (PTR1), y   
+
+    rts
+.endproc
+
+.proc band_filter_toggle : near
+    lda #<general
+    sta PTR1
+    lda #>general
+    sta PTR1+1
+
+    ldy #sid_general::filter_mode
+    lda (PTR1), y
+    eor #sid_filter_modes::FILTER_BAND_PASS >> 4
+    sta (PTR1), y   
+
+    rts
+.endproc
+
+.proc mute_voice3_toggle : near
+    lda #<general
+    sta PTR1
+    lda #>general
+    sta PTR1+1
+
+    ldy #sid_general::filter_mode
+    lda (PTR1), y
+    eor #sid_filter_modes::FILTER_MUTE_VOICE3 >> 4
+    sta (PTR1), y   
+
+    rts
+.endproc
+
+.proc voice1_filter_toggle : near
+    lda #<general
+    sta PTR1
+    lda #>general
+    sta PTR1+1
+
+    ldy #sid_general::filter_flag
+    lda (PTR1), y
+    eor #sid_filter_flags::FILTER_VOICE1
+    sta (PTR1), y   
+
+    rts
+.endproc
+    
+.proc voice2_filter_toggle : near
+    lda #<general
+    sta PTR1
+    lda #>general
+    sta PTR1+1
+
+    ldy #sid_general::filter_flag
+    lda (PTR1), y
+    eor #sid_filter_flags::FILTER_VOICE2
+    sta (PTR1), y   
+
+    rts
+.endproc
+
+.proc voice3_filter_toggle : near
+    lda #<general
+    sta PTR1
+    lda #>general
+    sta PTR1+1
+
+    ldy #sid_general::filter_flag
+    lda (PTR1), y
+    eor #sid_filter_flags::FILTER_VOICE3
+    sta (PTR1), y   
+
+    rts
 .endproc
 
 ; Toggle the selected voice
@@ -890,6 +1031,19 @@ loop:
     ldy #>voice3
     jsr init_voice
 
+    ; Clear general to zero
+    lda #<general
+    sta PTR1
+    lda #>general
+    sta PTR1+1
+    ldy #$00
+    lda #$00
+    init_general_loop:
+        sta (PTR1), y           
+        iny
+        cpy #.sizeof(sid_voice)
+        bne init_general_loop           
+    
     rts
 .endproc
 
@@ -976,7 +1130,7 @@ loop:
     sty PTR2+1  
 
     do_reverse #0, #8
-    print_decimal_at_8 #7, #9, PTR2, sid_general::filter_cutoff
+    print_decimal_at_16 #7, #9, PTR2, sid_general::filter_cutoff
 
     do_reverse #0, #9
     print_decimal_at_8 #7, #10, PTR2, sid_general::filter_res
@@ -1039,6 +1193,56 @@ loop:
     rts
 .endproc
 
+.proc save_settings : near
+    
+    ; Set the starting address
+    lda #<voice1
+    sta PTR1
+    lda #>voice1
+    sta PTR1+1
+
+    ; Set the end address
+    lda #<(voice1 + .sizeof(sid_voice) * 3 + .sizeof(sid_general))
+    sta PTR2
+    lda #>(voice1 + .sizeof(sid_voice) * 3 + .sizeof(sid_general))
+    sta PTR2+1
+
+    ; Set the file name
+    lda #$0B
+    ldx #<filename
+    ldy #>filename
+
+    ; Save it
+    jsr file_save
+
+    rts
+.endproc
+
+.proc load_settings : near
+    
+    ; Set the starting address
+    lda #<voice1
+    sta PTR1
+    lda #>voice1
+    sta PTR1+1
+
+    ; Set the end address
+    lda #<(voice1 + .sizeof(sid_voice) * 3 + .sizeof(sid_general))
+    sta PTR2
+    lda #>(voice1 + .sizeof(sid_voice) * 3 + .sizeof(sid_general))
+    sta PTR2+1
+
+    ; Set the file name
+    lda #$08
+    ldx #<(filename + 3)
+    ldy #>(filename + 3)
+
+    ; Save it
+    jsr file_load
+
+    rts
+.endproc
+
 ; PETSCII strings for the template
 str_atk:            .asciiz "ATK : "
 str_ctrl:           .asciiz "CTRL: "
@@ -1062,5 +1266,8 @@ general:    .res .sizeof(sid_general)   ; Reserve space for SID general structur
 
 column:     .res 1                      ; Current selected column (0, 1, or 2) 
 row:        .res 1                      ; Current selected row (1 - 12), for rows 8-12 column is ignored
+
+rset:        .res 1                      ; Register set for saving/restoring registers. 
+filename:    .asciiz "@0:SIDTOOL0"       ; Filename for saving/loading settings "registerset" will replace 0
 
 .endscope

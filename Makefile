@@ -24,13 +24,14 @@ BUILD_DIR=build/c64
 C64U_ADDRESS=192.168.0.39
 CFG_DIR=$(BUILD_DIR)/cfg
 
-MAIN_ROOT = sidtest
+MAIN_ROOT = sidtool
 
 # Define sources for the main program and overlays
 MAIN_SOURCES = 	src/main.s \
 				src/print.s \
 				src/math.s \
-				src/help.s 
+				src/help.s \
+				src/file.s 
 
 # Define output binaries
 MAIN_BIN = $(BUILD_DIR)/$(MAIN_ROOT).prg

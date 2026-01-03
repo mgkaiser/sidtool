@@ -68,6 +68,13 @@ R15H= R15 + 1
 ; Constant for KERNAL API
 KERNAL_CHROUT   = $FFD2
 KERNAL_GETIN    = $FFE4
+KERNAL_SETLFS   = $FFBA
+KERNAL_SETNAM   = $FFBD
+KERNAL_OPEN     = $FFC0
+KERNAL_CLOSE    = $FFC3
+KERNAL_CLRCHN   = $FFCC
+KERNAL_SAVE     = $FFD8
+KERNAL_LOAD     = $FFD5
 
 ; Constants for VIC-II registers (https://codebase64.net/doku.php?id=vic)
 VIC_BASE         = $d000

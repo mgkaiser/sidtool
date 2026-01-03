@@ -11,6 +11,15 @@
 ; Define exports for all public functions in this module
 .export display_help
 
+; Display the help screen
+; Usage:
+;   jsr display_help
+; Returns:
+;   None
+; Results:
+;   Help screen displayed, waits for key press, then returns to main template
+; Destroys:
+;   A, X, Y
 .proc display_help : near
     ; Clear screen
     scnclr
@@ -115,15 +124,15 @@ HELP_TEXT_10: .byte "P:          TOGGLE WAVEFORM TO PULSE   ", $0d, $00
 HELP_TEXT_11: .byte "N:          TOGGLE WAVEFORM TO NOISE   ", $0d, $00
 HELP_TEXT_12: .byte "Y:          TOGGLE SYNC                ", $0d, $00
 HELP_TEXT_13: .byte "R:          TOGGLE RINGMOD             ", $0d, $00
-HELP_TEXT_14: .byte "?:          HELP                       ", $0d, $00
-HELP_TEXT_15: .byte "Q:          QUIT                       ", $0d, $00
-HELP_TEXT_16: .byte "", $0d, $00
-HELP_TEXT_17: .byte "", $0d, $00
-HELP_TEXT_18: .byte "", $0d, $00
-HELP_TEXT_19: .byte "", $0d, $00
+HELP_TEXT_14: .byte "H/L/B:      TOGGLE HIGH/LOW/BAND FILTER", $0d, $00
+HELP_TEXT_15: .byte "F2/F4/F6:   TOGGLE FILTER VOICE 1/2/3  ", $0d, $00
+HELP_TEXT_16: .byte "M:          MUTE VOICE 3               ", $0d, $00
+HELP_TEXT_17: .byte "V:          SAVE SETTINGS              ", $0d, $00
+HELP_TEXT_18: .byte "G:          LOAD SETTINGS              ", $0d, $00
+HELP_TEXT_19: .byte "1-9:        SWITCH REGISTER SET        ", $0d, $00
 HELP_TEXT_20: .byte "", $0d, $00
-HELP_TEXT_21: .byte "", $0d, $00
-HELP_TEXT_22: .byte "", $0d, $00
+HELP_TEXT_21: .byte "?:          HELP                       ", $0d, $00
+HELP_TEXT_22: .byte "Q:          QUIT                       ", $0d, $00
 HELP_TEXT_23: .byte "PRESS ANY KEY TO CONTINUE...           ", $0d, $00
 
 .endscope
