@@ -4,8 +4,13 @@ TMP1 = $f7
 TMP2 = $f9
 TMP3 = $a8
 TMP4 = $aa
+TMP4 = $b0
+
 PTR1 = $fb
 PTR2 = $fd
+PTR3 = $9b
+PTR4 = $9E
+PTR5 = $b2
 
 
 ; Constant for KERNAL API
