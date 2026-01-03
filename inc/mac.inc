@@ -1,18 +1,18 @@
 
+; Safe Zero Page locations for general use (https://www.c64-wiki.com/wiki/Zeropage)
 TMP1 = $f7
 TMP2 = $f9
 TMP3 = $a8
 TMP4 = $aa
 PTR1 = $fb
 PTR2 = $fd
-CURX = $d3
-CURY = $d6  
+
 
 ; Constant for KERNAL API
 KERNAL_CHROUT   = $FFD2
 KERNAL_GETIN    = $FFE4
 
-; Constants for VIC-II registers
+; Constants for VIC-II registers (https://codebase64.net/doku.php?id=vic)
 VIC_BASE         = $d000
 VIC_CTRL1        = VIC_BASE + $11
 VIC_CTRL2        = VIC_BASE + $16
@@ -31,7 +31,7 @@ VIC_SPRITE_COL6  = VIC_BASE + $2a
 VIC_SPRITE_COL7  = VIC_BASE + $2b
 VIC_SPRITE_COL8  = VIC_BASE + $2c
 
-; Constants for SID registers
+; Constants for SID registers (https://codebase64.net/doku.php?id=base:sid_programming)
 SID1_BASE                = $d400
 SID_REG_VOICE1_FREQ_LO   = SID1_BASE + $00
 SID_REG_VOICE1_FREQ_HI   = SID1_BASE + $01
@@ -62,6 +62,23 @@ SID_REG_PADDLE_X         = SID1_BASE + $19
 SID_REG_PADDLE_Y         = SID1_BASE + $1a
 SID_REG_OSC3             = SID1_BASE + $1b
 SID_REG_ENV3             = SID1_BASE + $1c
+
+; Constants for REU registers (https://codebase64.net/doku.php?id=base:reu_registers)
+REU_BASE            = $DF00
+REU_CMD             = REU_BASE + $00
+REU_STATUS          = REU_BASE + $01
+REU_NEAR_ADDR_LO    = REU_BASE + $02
+REU_NEAR_ADDR_HI    = REU_BASE + $03
+REU_FAR_ADDR_LO     = REU_BASE + $04
+REU_FAR_ADDR_MED    = REU_BASE + $05
+REU_FAR_ADDR_HI     = REU_BASE + $06
+REU_BLOCK_LEN_LO    = REU_BASE + $07
+REU_BLOCK_LEN_HI    = REU_BASE + $08
+REU_INTERRUPT_MASK  = REU_BASE + $09
+
+; REU Command Codes
+REU_CMD_COPY_NEAR_TO_FAR = $80
+REU_CMD_COPY_FAR_TO_NEAR = $81
 
 ; PETSCII Control Codes (From https://www.c64-wiki.com/wiki/PETSCII)
 PETSCII_CLR_SCREEN  = $93
