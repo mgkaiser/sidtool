@@ -52,14 +52,16 @@
 ; Results:
 ;   PETSCII reverse on if cursor matches, off otherwise
 ; Destroys:
-.macro do_reverse cur_col, cur_row
-    lda column
-    cmp cur_col
-    bne :+
+.macro do_reverse cur_col, cur_row    
     lda row
     cmp cur_row
-    bne :+
-    lda #PETSCII_REVERSE_ON
+    bne :++
+    cmp #$08
+    bcs :+
+    lda column    
+    cmp cur_col
+    bne :++
+:   lda #PETSCII_REVERSE_ON
     jsr KERNAL_CHROUT
     jmp :++
 :   lda #PETSCII_REVERSE_OFF

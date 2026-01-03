@@ -538,7 +538,7 @@ selected_column:
         jmp exit_proc        
 
 :   cmp #$07
-    bne exit_proc      ; This should not happen                
+    bne :+  
         ldy #sid_voice::release                                     ; Release
         clc
         lda (PTR1), y
@@ -547,6 +547,32 @@ selected_column:
         sta (PTR1), y
         jmp exit_proc   
 
+:   cmp #$08
+    bne :+  
+        ; General SID structure could go here
+        jmp exit_proc
+
+:   cmp #$09
+    bne :+  
+        ; General SID structure could go here
+        jmp exit_proc        
+
+:   cmp #$0a
+    bne :+  
+        ; General SID structure could go here
+        jmp exit_proc        
+
+:   cmp #$0b
+    bne :+  
+        ; General SID structure could go here
+        jmp exit_proc        
+
+:   cmp #$0c
+    bne :+  
+        ; General SID structure could go here
+        jmp exit_proc                
+
+:
 exit_proc:
     rts
 .endproc
@@ -620,15 +646,41 @@ selected_column:
         jmp exit_proc        
 
 :   cmp #$07
-    bne exit_proc      ; This should not happen                
+    bne :+  
         ldy #sid_voice::release                                     ; Release
         sec
         lda (PTR1), y
         sbc #$01
         and #$0f
         sta (PTR1), y
+        jmp exit_proc    
+
+:   cmp #$08
+    bne :+  
+        ; General SID structure could go here
+        jmp exit_proc
+
+:   cmp #$09
+    bne :+  
+        ; General SID structure could go here
         jmp exit_proc        
 
+:   cmp #$0a
+    bne :+  
+        ; General SID structure could go here
+        jmp exit_proc        
+
+:   cmp #$0b
+    bne :+  
+        ; General SID structure could go here
+        jmp exit_proc        
+
+:   cmp #$0c
+    bne :+  
+        ; General SID structure could go here
+        jmp exit_proc        
+
+:
 exit_proc:
     rts
 .endproc
@@ -777,7 +829,7 @@ loop:
     ; Did we go below 1?
     cmp #$00
     bne :+
-        lda #$07
+        lda #$0c
         sta row     
     
 :   rts
@@ -801,7 +853,7 @@ loop:
     sta row
 
     ; Did we go above 7?
-    cmp #$08
+    cmp #$0d
     bne :+
         lda #$01
         sta row
@@ -924,7 +976,46 @@ loop:
     lda #19                     ; Print voice 3 in column 19    
     jsr display_data_one_voice
 
+    ; Display general SID data
+    ldx #<general
+    ldy #>general
+    jsr display_data_general
+
     rts
+.endproc
+
+; Display general SID data
+; Usage:
+;   x:y = pointer to sid_general structure
+; Returns:
+;   Nothing
+; Results:
+;   Data displayed on screen
+; Destroys:
+;   PTR2, PTR2+1, A, X, Y
+.proc display_data_general : near
+
+    ; Store the pointer to the voice structure in PTR1
+    stx PTR2
+    sty PTR2+1  
+
+    do_reverse #0, #8
+    print_decimal_at_8 #7, #9, PTR2, sid_general::filter_cutoff
+
+    do_reverse #0, #9
+    print_decimal_at_8 #7, #10, PTR2, sid_general::filter_res
+
+    do_reverse #0, #10
+    print_decimal_at_8 #7, #11, PTR2, sid_general::filter_mode
+
+    do_reverse #0, #11
+    print_decimal_at_8 #7, #12, PTR2, sid_general::filter_flag
+
+    do_reverse #0, #12
+    print_decimal_at_8 #7, #13, PTR2, sid_general::volume   
+
+    rts 
+
 .endproc
 
 ; Display data for one voice

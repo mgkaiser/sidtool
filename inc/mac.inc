@@ -5,7 +5,7 @@ TMP1 = $f7
 TMP2 = $f9
 TMP3 = $a8
 TMP4 = $aa
-TMP4 = $b0
+TMP5 = $b0
 
 PTR1 = $fb
 PTR2 = $fd
