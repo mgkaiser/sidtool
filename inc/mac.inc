@@ -158,8 +158,8 @@ PETSCII_F5          = $87
 PETSCII_F7          = $88
 PETSCII_F2          = $89
 PETSCII_F4          = $8a
-PETSCII_F6          = $8c
-PETSCII_F8          = $8e
+PETSCII_F6          = $8b
+PETSCII_F8          = $8c
 
 ; PETSCII Control Codes for Colors
 PETSCII_COL_BLACK       = $90
