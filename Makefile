@@ -56,6 +56,8 @@ debug:
 	@scripts/debug.sh $(BUILD_DIR) $(MAIN_ROOT) $(C64U_ADDRESS) $(C64U_Password) .voice2 9 >> $(BUILD_DIR)/debug_output.txt
 	@scripts/debug.sh $(BUILD_DIR) $(MAIN_ROOT) $(C64U_ADDRESS) $(C64U_Password) .voice3 9 >> $(BUILD_DIR)/debug_output.txt
 	@scripts/debug.sh $(BUILD_DIR) $(MAIN_ROOT) $(C64U_ADDRESS) $(C64U_Password) .general 6 >> $(BUILD_DIR)/debug_output.txt
+	@scripts/debug.sh $(BUILD_DIR) $(MAIN_ROOT) $(C64U_ADDRESS) $(C64U_Password) .row 1 >> $(BUILD_DIR)/debug_output.txt
+	@scripts/debug.sh $(BUILD_DIR) $(MAIN_ROOT) $(C64U_ADDRESS) $(C64U_Password) .column 1 >> $(BUILD_DIR)/debug_output.txt
 
 test: all
 	@echo "Running $(MAIN_BIN) on C64U ..."
