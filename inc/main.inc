@@ -96,12 +96,23 @@
 ;   Nothing
 ; Results:
 ;   JSR to target if match
-.macro gosub_if_char char, target 
+.macro gosub_if_char char, target, endlabel 
     cmp #char
     bne :+
     jsr target
+    jmp endlabel
 :    
 .endmacro
+
+.macro gosub_if_char_between lowchar, highchar, target, endlabel
+    cmp #lowchar
+    bcc :+
+    cmp #highchar + 1
+    bcs :+
+    jsr target
+    jmp endlabel
+:
+.endmacro   
 
 ; Add a constant to a 16-bit value in a structure
 ; Usage:

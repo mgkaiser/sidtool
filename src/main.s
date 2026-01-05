@@ -13,6 +13,68 @@
 ; Define exports for all public functions in this module
 .export display_template 
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+; Variables that do not require initialization
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+.segment "BSS"
+
+; Global variables
+voice1:     .res .sizeof(sid_voice)                                     ; Reserve space for first SID voice structure
+voice2:     .res .sizeof(sid_voice)                                     ; Reserve space for second SID voice structure
+voice3:     .res .sizeof(sid_voice)                                     ; Reserve space for third SID voice structure
+general:    .res .sizeof(sid_general)                                   ; Reserve space for SID general structure
+regsets:    .res (.sizeof(sid_voice) * 3 + .sizeof(sid_general)) * 9    ; Reserve space for 9 register sets
+
+column:     .res 1                      ; Current selected column (0, 1, or 2) 
+row:        .res 1                      ; Current selected row (1 - 12), for rows 8-12 column is ignored
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+; Variables that DO require initialization
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+.segment "MAIN"
+
+; PETSCII strings for the template
+str_atk:            .asciiz "ATK : "
+str_ctrl:           .asciiz "CTRL: "
+str_dec:            .asciiz "DEC : "
+str_freq:           .asciiz "FREQ: "
+str_pulse:          .asciiz "PLS : "
+str_rel:            .asciiz "REL : "
+str_sus:            .asciiz "SUS : "
+
+str_filter_res:     .asciiz "RES : "
+str_filter_cutoff:  .asciiz "CUT : "
+str_filter_flag:    .asciiz "FLG : "
+str_filter_mode:    .asciiz "MODE: "
+str_volume:         .asciiz "VOL : " 
+
+filename:           .asciiz "@0:SIDTOOL0"      ; Filename for saving/loading settings "registerset" will replace 0
+
+; Index to array to make math easier
+regsetofslo:    .byte .lobyte(regsets + ((.sizeof(sid_voice) * 3 + .sizeof(sid_general)) * 0))
+                .byte .lobyte(regsets + ((.sizeof(sid_voice) * 3 + .sizeof(sid_general)) * 1))
+                .byte .lobyte(regsets + ((.sizeof(sid_voice) * 3 + .sizeof(sid_general)) * 2))
+                .byte .lobyte(regsets + ((.sizeof(sid_voice) * 3 + .sizeof(sid_general)) * 3))
+                .byte .lobyte(regsets + ((.sizeof(sid_voice) * 3 + .sizeof(sid_general)) * 4))
+                .byte .lobyte(regsets + ((.sizeof(sid_voice) * 3 + .sizeof(sid_general)) * 5))
+                .byte .lobyte(regsets + ((.sizeof(sid_voice) * 3 + .sizeof(sid_general)) * 6))
+                .byte .lobyte(regsets + ((.sizeof(sid_voice) * 3 + .sizeof(sid_general)) * 7))
+                .byte .lobyte(regsets + ((.sizeof(sid_voice) * 3 + .sizeof(sid_general)) * 8))
+
+regsetofshi:    .byte .hibyte(regsets + ((.sizeof(sid_voice) * 3 + .sizeof(sid_general)) * 0))
+                .byte .hibyte(regsets + ((.sizeof(sid_voice) * 3 + .sizeof(sid_general)) * 1))
+                .byte .hibyte(regsets + ((.sizeof(sid_voice) * 3 + .sizeof(sid_general)) * 2))
+                .byte .hibyte(regsets + ((.sizeof(sid_voice) * 3 + .sizeof(sid_general)) * 3))
+                .byte .hibyte(regsets + ((.sizeof(sid_voice) * 3 + .sizeof(sid_general)) * 4))
+                .byte .hibyte(regsets + ((.sizeof(sid_voice) * 3 + .sizeof(sid_general)) * 5))
+                .byte .hibyte(regsets + ((.sizeof(sid_voice) * 3 + .sizeof(sid_general)) * 6))
+                .byte .hibyte(regsets + ((.sizeof(sid_voice) * 3 + .sizeof(sid_general)) * 7))
+                .byte .hibyte(regsets + ((.sizeof(sid_voice) * 3 + .sizeof(sid_general)) * 8))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+; Main Program Code
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;                
+
 ; Main program entry point
 ; Usage:
 ;   Nothing
@@ -56,36 +118,40 @@ main_loop:
 
     ; Check keys and act upon them
     getkey    
-    gosub_if_char '+', process_plus1
-    gosub_if_char '-', process_minus1
-    gosub_if_char 219, process_plus10                   ; SHIFT +
-    gosub_if_char 221, process_minus10                  ; SHIFT -
-    gosub_if_char 166, process_plus100                  ; CMD +
-    gosub_if_char 220, process_minus100                 ; CMD -
-    gosub_if_char PETSCII_CURSOR_LEFT, process_left
-    gosub_if_char PETSCII_CURSOR_RIGHT, process_right
-    gosub_if_char PETSCII_CURSOR_UP, process_up
-    gosub_if_char PETSCII_CURSOR_DOWN, process_down
-    gosub_if_char PETSCII_F1, voice1_toggle
-    gosub_if_char PETSCII_F3, voice2_toggle
-    gosub_if_char PETSCII_F5, voice3_toggle
-    gosub_if_char 'N', noise_toggle
-    gosub_if_char 'P', pulse_toggle
-    gosub_if_char 'S', sawtooth_toggle
-    gosub_if_char 'T', triangle_toggle
-    gosub_if_char 'Y', sync_toggle
-    gosub_if_char 'R', ringmod_toggle
-    gosub_if_char 'H', high_filter_toggle
-    gosub_if_char 'L', low_filter_toggle
-    gosub_if_char 'B', band_filter_toggle
-    gosub_if_char 'M', mute_voice3_toggle
-    gosub_if_char PETSCII_F2, voice1_filter_toggle
-    gosub_if_char PETSCII_F4, voice2_filter_toggle
-    gosub_if_char PETSCII_F6, voice3_filter_toggle
-    gosub_if_char 'V', save_settings
-    gosub_if_char 'G', load_settings
-    gosub_if_char '?', display_help
-    goto_if_char 'Q', exit_program    
+    gosub_if_char '+', process_plus1, main_end
+    gosub_if_char '-', process_minus1, main_end
+    gosub_if_char 219, process_plus10, main_end
+    gosub_if_char 221, process_minus10, main_end
+    gosub_if_char 166, process_plus100, main_end
+    gosub_if_char 220, process_minus100, main_end
+    gosub_if_char PETSCII_CURSOR_LEFT, process_left, main_end
+    gosub_if_char PETSCII_CURSOR_RIGHT, process_right, main_end
+    gosub_if_char PETSCII_CURSOR_UP, process_up, main_end
+    gosub_if_char PETSCII_CURSOR_DOWN, process_down, main_end
+    gosub_if_char PETSCII_F1, voice1_toggle, main_end
+    gosub_if_char PETSCII_F3, voice2_toggle, main_end
+    gosub_if_char PETSCII_F5, voice3_toggle, main_end
+    gosub_if_char 'N', noise_toggle, main_end
+    gosub_if_char 'P', pulse_toggle, main_end
+    gosub_if_char 'S', sawtooth_toggle, main_end
+    gosub_if_char 'T', triangle_toggle, main_end
+    gosub_if_char 'Y', sync_toggle, main_end
+    gosub_if_char 'R', ringmod_toggle, main_end
+    gosub_if_char 'H', high_filter_toggle, main_end
+    gosub_if_char 'L', low_filter_toggle, main_end
+    gosub_if_char 'B', band_filter_toggle, main_end
+    gosub_if_char 'M', mute_voice3_toggle, main_end
+    gosub_if_char PETSCII_F2, voice1_filter_toggle, main_end
+    gosub_if_char PETSCII_F4, voice2_filter_toggle, main_end
+    gosub_if_char PETSCII_F6, voice3_filter_toggle, main_end
+    gosub_if_char 'V', save_settings, main_end
+    gosub_if_char 'G', load_settings, main_end
+    gosub_if_char_between '1', '9', get_register_set, main_end
+    gosub_if_char_between '!', ')', put_register_set, main_end
+    gosub_if_char '?', display_help, main_end
+    goto_if_char 'Q', exit_program  
+
+main_end:      
 
     ; Loop if they didn't quit
     jmp main_loop
@@ -93,6 +159,70 @@ main_loop:
 exit_program:        
     rts
 
+.endproc
+
+.proc put_register_set : near
+
+    ; Get a pointer to the register set based on the key pressed
+    sec
+    sbc #'!'    
+    tax
+    lda regsetofslo, x
+    sta PTR1    
+    lda regsetofshi, x
+    sta PTR1+1    
+
+    ; Get a pointer to the active registers
+    lda #<voice1
+    sta PTR2
+    lda #>voice1
+    sta PTR2+1
+
+    ; Copy from the registerset to the active structures
+    ldy #$00
+
+copy_loop_top:
+
+    ; Copy the byte from current to regset
+    lda (PTR2), y
+    sta (PTR1), y
+    iny
+    cpy #33        
+    bne copy_loop_top    
+
+    rts
+.endproc
+
+.proc get_register_set : near
+
+    ; Get a pointer to the register set based on the key pressed
+    sec    
+    sbc #'1'    
+    tax
+    lda regsetofslo, x
+    sta PTR1    
+    lda regsetofshi, x    
+    sta PTR1+1    
+
+    ; Get a pointer to the active registers
+    lda #<voice1
+    sta PTR2
+    lda #>voice1
+    sta PTR2+1
+        
+    ; Copy from the registerset to the active structures
+    ldy #$00
+
+copy_loop_top:
+
+    ; Copy the byte from regset to current
+    lda (PTR1), y
+    sta (PTR2), y
+    iny
+    cpy #33
+    bne copy_loop_top
+
+    rts 
 .endproc
 
 ; Update the SID registers from the voice structures
@@ -1042,8 +1172,57 @@ loop:
         sta (PTR1), y           
         iny
         cpy #.sizeof(sid_voice)
-        bne init_general_loop           
+        bne init_general_loop    
+
+    ; Clear register sets
+    jsr init_register_sets       
     
+    rts
+.endproc
+
+.proc init_register_sets : near
+
+    ; Get a pointer to the register set based on the key pressed    
+    lda #<regsets
+    sta PTR1
+    lda #>regsets
+    sta PTR1+1
+
+    ; Calculate end address
+    clc
+    lda PTR1
+    adc #.lobyte(((.sizeof(sid_voice) * 3) + .sizeof(sid_general)) * 9)
+    sta TMP1
+    lda PTR1+1
+    adc #.hibyte(((.sizeof(sid_voice) * 3) + .sizeof(sid_general)) * 9)
+    sta TMP1+1
+
+    ; Copy from the registerset to the active structures
+    ldy #$00
+
+clear_loop_top:
+
+    ; Clear the byte
+    lda #$00
+    sta (PTR1), y
+
+    ; Increment pointer
+    clc
+    lda PTR1
+    adc #$01
+    sta PTR1
+    lda PTR1+1
+    adc #$00    
+    sta PTR1+1    
+    
+    ; Check for end of clear
+    lda PTR1
+    cmp TMP1
+    bne clear_loop_top
+    lda PTR1+1
+    cmp TMP1+1
+    bne clear_loop_top    
+
     rts
 .endproc
 
@@ -1083,32 +1262,28 @@ loop:
 .proc display_data :near    
 
     ; Display data for voice 1
-    ldx #<voice1
-    ldy #>voice1
+    ldxy_imm_16 voice1
     lda #$00
     sta TMP4
     lda #7                      ; Print voice 1 in column 7
     jsr display_data_one_voice
 
     ; Display data voice 2
-    ldx #<voice2
-    ldy #>voice2
+    ldxy_imm_16 voice2
     lda #$01
     sta TMP4
     lda #13                     ; Print voice 2 in column 13
     jsr display_data_one_voice
 
-    ; Display data voice 3    
-    ldx #<voice3
-    ldy #>voice3
+    ; Display data voice 3        
+    ldxy_imm_16 voice3
     lda #$02
     sta TMP4
     lda #19                     ; Print voice 3 in column 19    
     jsr display_data_one_voice
 
-    ; Display general SID data
-    ldx #<general
-    ldy #>general
+    ; Display general SID data    
+    ldxy_imm_16 general
     jsr display_data_general
 
     rts
@@ -1125,9 +1300,8 @@ loop:
 ;   PTR2, PTR2+1, A, X, Y
 .proc display_data_general : near
 
-    ; Store the pointer to the voice structure in PTR1
-    stx PTR2
-    sty PTR2+1  
+    ; Store the pointer to the voice structure in PTR2
+    stxy_imm_16 PTR2        
 
     do_reverse #0, #8
     print_decimal_at_16 #7, #9, PTR2, sid_general::filter_cutoff
@@ -1161,9 +1335,8 @@ loop:
 ;   PTR2, PTR2+1, TMP2, TMP2+1, TMP3, TMP3+1, TMP4, TMP4+1, A, X, Y
 .proc display_data_one_voice : near
 
-    ; Store the pointer to the voice structure in PTR1
-    stx PTR2
-    sty PTR2+1  
+    ; Store the pointer to the voice structure in PTR2
+    stxy_imm_16 PTR2    
 
     ; Store Column position in TMP1
     sta TMP4 + 1   
@@ -1193,19 +1366,22 @@ loop:
     rts
 .endproc
 
+; Save the current settings to a file
+; Usage:
+;   Nothing
+; Returns:
+;   Nothing
+; Results:
+;   Settings saved to file from voice structures
+; Destroys:
+;   A, X, Y, PTR1, PTR2
 .proc save_settings : near
     
     ; Set the starting address
-    lda #<voice1
-    sta PTR1
-    lda #>voice1
-    sta PTR1+1
+    sta_imm_16 regsets, PTR1
 
     ; Set the end address
-    lda #<(voice1 + .sizeof(sid_voice) * 3 + .sizeof(sid_general))
-    sta PTR2
-    lda #>(voice1 + .sizeof(sid_voice) * 3 + .sizeof(sid_general))
-    sta PTR2+1
+    sta_imm_16 (regsets + ((.sizeof(sid_voice) * 3 + .sizeof(sid_general)) * 9)), PTR2        
 
     ; Set the file name
     lda #$0B
@@ -1218,19 +1394,22 @@ loop:
     rts
 .endproc
 
+; Load settings from file
+; Usage:
+;   Nothing
+; Returns:
+;   Nothing
+; Results:
+;   Settings loaded from file into voice structures
+; Destroys:
+;   A, X, Y, PTR1, PTR2
 .proc load_settings : near
     
     ; Set the starting address
-    lda #<voice1
-    sta PTR1
-    lda #>voice1
-    sta PTR1+1
+    sta_imm_16 regsets, PTR1
 
     ; Set the end address
-    lda #<(voice1 + .sizeof(sid_voice) * 3 + .sizeof(sid_general))
-    sta PTR2
-    lda #>(voice1 + .sizeof(sid_voice) * 3 + .sizeof(sid_general))
-    sta PTR2+1
+    sta_imm_16 (regsets + ((.sizeof(sid_voice) * 3 + .sizeof(sid_general)) * 9)), PTR2    
 
     ; Set the file name
     lda #$08
@@ -1242,32 +1421,5 @@ loop:
 
     rts
 .endproc
-
-; PETSCII strings for the template
-str_atk:            .asciiz "ATK : "
-str_ctrl:           .asciiz "CTRL: "
-str_dec:            .asciiz "DEC : "
-str_freq:           .asciiz "FREQ: "
-str_pulse:          .asciiz "PLS : "
-str_rel:            .asciiz "REL : "
-str_sus:            .asciiz "SUS : "
-
-str_filter_res:     .asciiz "RES : "
-str_filter_cutoff:  .asciiz "CUT : "
-str_filter_flag:    .asciiz "FLG : "
-str_filter_mode:    .asciiz "MODE: "
-str_volume:         .asciiz "VOL : " 
-
-; Global variables
-voice1:     .res .sizeof(sid_voice)     ; Reserve space for first SID voice structure
-voice2:     .res .sizeof(sid_voice)     ; Reserve space for second SID voice structure
-voice3:     .res .sizeof(sid_voice)     ; Reserve space for third SID voice structure
-general:    .res .sizeof(sid_general)   ; Reserve space for SID general structure
-
-column:     .res 1                      ; Current selected column (0, 1, or 2) 
-row:        .res 1                      ; Current selected row (1 - 12), for rows 8-12 column is ignored
-
-rset:        .res 1                      ; Register set for saving/restoring registers. 
-filename:    .asciiz "@0:SIDTOOL0"       ; Filename for saving/loading settings "registerset" will replace 0
 
 .endscope

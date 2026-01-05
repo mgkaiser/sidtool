@@ -196,3 +196,21 @@ VIC_COL_GRAY        = $0c
 VIC_COL_LIGHT_GREEN = $0d
 VIC_COL_LIGHT_BLUE  = $0e
 VIC_COL_LIGHT_GRAY  = $0f
+
+.macro sta_imm_16 value, addr
+    lda #<value
+    sta addr
+    lda #>value
+    sta addr + 1
+.endmacro
+
+.macro stxy_imm_16 addr    
+    stx addr
+    sty addr + 1
+.endmacro
+
+.macro ldxy_imm_16 value
+    ldx #<value
+    ldy #>value
+.endmacro
+

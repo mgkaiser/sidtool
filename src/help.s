@@ -129,8 +129,8 @@ HELP_TEXT_15: .byte "F2/F4/F6:   TOGGLE FILTER VOICE 1/2/3  ", $0d, $00
 HELP_TEXT_16: .byte "M:          MUTE VOICE 3               ", $0d, $00
 HELP_TEXT_17: .byte "V:          SAVE SETTINGS              ", $0d, $00
 HELP_TEXT_18: .byte "G:          LOAD SETTINGS              ", $0d, $00
-HELP_TEXT_19: .byte "1-9:        SWITCH REGISTER SET        ", $0d, $00
-HELP_TEXT_20: .byte "", $0d, $00
+HELP_TEXT_19: .byte "1-9:        GET REGISTER SET           ", $0d, $00
+HELP_TEXT_20: .byte "SHIFT 1-9:  SAVE REGISTER SET          ", $0d, $00
 HELP_TEXT_21: .byte "?:          HELP                       ", $0d, $00
 HELP_TEXT_22: .byte "Q:          QUIT                       ", $0d, $00
 HELP_TEXT_23: .byte "PRESS ANY KEY TO CONTINUE...           ", $0d, $00

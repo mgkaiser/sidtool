@@ -20,8 +20,9 @@ ASFLAGS	 += --cpu 6502
 ASFLAGS	 += --relax-checks
 
 BUILD_DIR=build/c64
-#EMU_DIR1=/mnt/c/x16emu_win64-r49/drive
 C64U_ADDRESS=192.168.0.39
+#Set your C64U password here:
+#C64U_PASSWORD=******** 	
 CFG_DIR=$(BUILD_DIR)/cfg
 
 MAIN_ROOT = sidtool
@@ -47,7 +48,14 @@ MAIN_CFG = $(CFG_DIR)/$(MAIN_ROOT).cfg
 # Default target
 all: $(MAIN_BIN)
 
-# Install target	
+# You can set watches here.  It will look in your .sym file for the address of the label you provide and use the C64U API to read memory 
+# at that location.
+debug:
+	@rm -f $(BUILD_DIR)/debug_output.txt
+	@scripts/debug.sh $(BUILD_DIR) $(MAIN_ROOT) $(C64U_ADDRESS) $(C64U_Password) .voice1 9 >> $(BUILD_DIR)/debug_output.txt
+	@scripts/debug.sh $(BUILD_DIR) $(MAIN_ROOT) $(C64U_ADDRESS) $(C64U_Password) .voice2 9 >> $(BUILD_DIR)/debug_output.txt
+	@scripts/debug.sh $(BUILD_DIR) $(MAIN_ROOT) $(C64U_ADDRESS) $(C64U_Password) .voice3 9 >> $(BUILD_DIR)/debug_output.txt
+	@scripts/debug.sh $(BUILD_DIR) $(MAIN_ROOT) $(C64U_ADDRESS) $(C64U_Password) .general 6 >> $(BUILD_DIR)/debug_output.txt
 
 test: all
 	@echo "Running $(MAIN_BIN) on C64U ..."
